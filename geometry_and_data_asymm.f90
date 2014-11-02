@@ -16,7 +16,6 @@ subroutine indat
         call geom2
     end if
     call parameters1
-    call field_param
     call gazel1
     call eid
     dt=2.0d0*pi
@@ -65,7 +64,7 @@ subroutine parameters1
 end subroutine
 
 
-subroutine field_param
+subroutine read_bessel_zeros
   integer ia,i_r,i_alpha
   open (32,file='bessel_zeros.cfg')
     do i_alpha=0,10

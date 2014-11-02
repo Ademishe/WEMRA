@@ -105,6 +105,7 @@ program nest_multy_mode_nes
     end if
 		print *, "sk = ", sk
     call configarr !распределение памяти для основных массивов
+		call read_bessel_zeros
 		call init_main_arrays
 
 ! амплитуды волн, приходящих в систему
