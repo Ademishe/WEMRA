@@ -1,7 +1,7 @@
 Waveguide electromagnetic field analyzer
 
 This program provides simulation of transmission of electromagnetic field through round waveguide with periodic non-uniformity.
-Configuration file is multi5.cfg; it consist of russian comments and numerical parameters under them.
+Configuration file is multi5.cfg; it consists of russian comments and numerical parameters under them.
 
 License: MIT
 
