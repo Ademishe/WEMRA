@@ -207,12 +207,10 @@ subroutine manager (stepwrite,iw)
 !     то такое istwr? - это счетчик шагов при итерировании, нужен для записи на диск
   	istwr=istwr+1
     tau=tau+dt
-    do ina=0,nka
-			print *, "matrix_dynamic"
-      call matrix_dynamic
-			print *, "progonka"
-      call progonka
-    end do
+		print *, "matrix_dynamic"
+    call matrix_dynamic
+		print *, "progonka"
+  	call progonka
 !	   do is=2,sk
 !	   do i=1,nkr
 

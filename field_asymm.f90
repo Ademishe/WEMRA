@@ -39,7 +39,7 @@ end subroutine
 
 
 subroutine matrix_construct
-  integer is,i,j,ina,kluch_shiv
+  integer is,i,j,ina,jna
 	complex*16 fdplus,fdminus, fbminus, fbplus
   integer info
 
@@ -177,114 +177,129 @@ subroutine matrix_construct
   end do	! end is
 
   do is=2,sk
+    do ina = 0, nka
+      do jna = 0, nka
+        call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina,jna),nkr,alfaplus(is-1,:,:,ina,jna),nkr,(0.0d0,0.0d0),rab1,nkr)
+        call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina,jna),nkr,alfaminus(is-1,:,:,ina,jna),nkr,(1.0d0,0.0d0),rab1,nkr)
 
-    call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina),nkr,alfaplus(is-1,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
-    call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina),nkr,alfaminus(is-1,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
+        rab1=rab1+fgammaplus(is-1,:,:,ina,jna)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),uste1(is,:,:,ina,jna),nkr,rab1,nkr,(0.0d0,0.0d0),hie1(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina,jna),nkr,alfaplus(is-1,:,:,ina,jna),nkr,(0.0d0,0.0d0),rab1,nkr)
+        call zgemm('n','n',nkr,nkr,nkr,-dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina,jna),nkr,alfaminus(is-1,:,:,ina,jna),nkr,(1.0d0,0.0d0),rab1,nkr)
 
-    rab1=rab1+fgammaplus(is-1,:,:,ina)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),uste1(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),hie1(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina),nkr,alfaplus(is-1,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
-    call zgemm('n','n',nkr,nkr,nkr,-dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina),nkr,alfaminus(is-1,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
+        rab1=rab1+fgammaplus(is-1,:,:,ina,jna)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),usth1(is,:,:,ina,jna),nkr,rab1,nkr,(0.0d0,0.0d0),hih1(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaminus(is,:,:,ina,jna),nkr,alfaplus(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),rab1,nkr)
+        call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaplus(is,:,:,ina,jna),nkr,alfaminus(is,:,:,ina,jna),nkr,(1.0d0,0.0d0),rab1,nkr)
 
-    rab1=rab1+fgammaplus(is-1,:,:,ina)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),usth1(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),hih1(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaminus(is,:,:,ina),nkr,alfaplus(is,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
-    call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaplus(is,:,:,ina),nkr,alfaminus(is,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
+        rab1=rab1+fgammaminus(is,:,:,ina,jna)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),uste2(is,:,:,ina,jna),nkr,rab1,nkr,(0.0d0,0.0d0),hie2(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaminus(is,:,:,ina,jna),nkr,alfaplus(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),rab1,nkr)
+        call zgemm('n','n',nkr,nkr,nkr,dz(is)/2.0d0*ee,fgammaplus(is,:,:,ina,jna),nkr,alfaminus(is,:,:,ina,jna),nkr,(1.0d0,0.0d0),rab1,nkr)
 
-    rab1=rab1+fgammaminus(is,:,:,ina)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),uste2(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),hie2(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaminus(is,:,:,ina),nkr,alfaplus(is,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
-    call zgemm('n','n',nkr,nkr,nkr,dz(is)/2.0d0*ee,fgammaplus(is,:,:,ina),nkr,alfaminus(is,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
+        rab1=rab1+fgammaminus(is,:,:,ina,jna)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),usth2(is,:,:,ina,jna),nkr,rab1,nkr,(0.0d0,0.0d0),hih2(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina,jna),nkr,betaplus(is-1,:,:,ina,jna),nkr,(0.0d0,0.0d0),rab1,nkr)
+        call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina,jna),nkr,betaminus(is-1,:,:,ina,jna),nkr,(1.0d0,0.0d0),rab1,nkr)
 
-    rab1=rab1+fgammaminus(is,:,:,ina)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),usth2(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),hih2(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina),nkr,betaplus(is-1,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
-    call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina),nkr,betaminus(is-1,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
+        rab1=rab1+fgammaminus(is-1,:,:,ina,jna)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),uste1(is,:,:,ina,jna),nkr,rab1,nkr,(0.0d0,0.0d0),psie1(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina,jna),nkr,betaplus(is-1,:,:,ina,jna),nkr,(0.0d0,0.0d0),rab1,nkr)
+        call zgemm('n','n',nkr,nkr,nkr,-dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina,jna),nkr,betaminus(is-1,:,:,ina,jna),nkr,(1.0d0,0.0d0),rab1,nkr)
 
-    rab1=rab1+fgammaminus(is-1,:,:,ina)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),uste1(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),psie1(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina),nkr,betaplus(is-1,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
-    call zgemm('n','n',nkr,nkr,nkr,-dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina),nkr,betaminus(is-1,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
+        rab1=rab1-fgammaminus(is-1,:,:,ina,jna)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),usth1(is,:,:,ina,jna),nkr,rab1,nkr,(0.0d0,0.0d0),psih1(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaminus(is,:,:,ina,jna),nkr,betaplus(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),rab1,nkr)
+        call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaplus(is,:,:,ina,jna),nkr,betaminus(is,:,:,ina,jna),nkr,(1.0d0,0.0d0),rab1,nkr)
 
-    rab1=rab1-fgammaminus(is-1,:,:,ina)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),usth1(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),psih1(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaminus(is,:,:,ina),nkr,betaplus(is,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
-    call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaplus(is,:,:,ina),nkr,betaminus(is,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
+        rab1=rab1+fgammaplus(is,:,:,ina,jna)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),uste2(is,:,:,ina,jna),nkr,rab1,nkr,(0.0d0,0.0d0),psie2(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaminus(is,:,:,ina,jna),nkr,betaplus(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),rab1,nkr)
+        call zgemm('n','n',nkr,nkr,nkr,dz(is)/2.0d0*ee,fgammaplus(is,:,:,ina,jna),nkr,betaminus(is,:,:,ina,jna),nkr,(1.0d0,0.0d0),rab1,nkr)
 
-    rab1=rab1+fgammaplus(is,:,:,ina)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),uste2(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),psie2(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,-dz(is)/2.0d0*ee,fgammaminus(is,:,:,ina),nkr,betaplus(is,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
-    call zgemm('n','n',nkr,nkr,nkr,dz(is)/2.0d0*ee,fgammaplus(is,:,:,ina),nkr,betaminus(is,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
-
-    rab1=rab1-fgammaplus(is,:,:,ina)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),usth2(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),psih2(is,:,:,ina),nkr)
-
-
-!        call dlincg (nkr, psie1(is,:,:,ina),nkr,psie1inv(is,:,:,ina), nkr)
-!        call dlincg (nkr, psie2(is,:,:,ina),nkr,psie2inv(is,:,:,ina), nkr)
-!        call dlincg (nkr, psih1(is,:,:,ina),nkr,psih1inv(is,:,:,ina), nkr)
-!        call dlincg (nkr, psih2(is,:,:,ina),nkr,psih2inv(is,:,:,ina), nkr)
-    psie1inv(is,:,:,ina) = psie1(is,:,:,ina)
-    call zgetrf(nkr,nkr,psie1inv(is,:,:,ina),nkr,ipiv,info)
-    call zgetri(nkr, psie1inv(is,:,:,ina),nkr,ipiv,temp, nkr, info)
-    psie2inv(is,:,:,ina) = psie2(is,:,:,ina)
-    call zgetrf(nkr,nkr,psie2inv(is,:,:,ina),nkr,ipiv,info)
-    call zgetri(nkr, psie2inv(is,:,:,ina),nkr,ipiv,temp, nkr, info)
-    psih1inv(is,:,:,ina) = psih1(is,:,:,ina)
-    call zgetrf(nkr,nkr,psih1inv(is,:,:,ina),nkr,ipiv,info)
-    call zgetri(nkr, psih1inv(is,:,:,ina),nkr,ipiv,temp, nkr, info)
-    psih2inv(is,:,:,ina) = psih2(is,:,:,ina)
-    call zgetrf(nkr,nkr,psih2inv(is,:,:,ina),nkr,ipiv,info)
-    call zgetri(nkr, psih2inv(is,:,:,ina),nkr,ipiv,temp, nkr, info)
+        rab1=rab1-fgammaplus(is,:,:,ina,jna)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),usth2(is,:,:,ina,jna),nkr,rab1,nkr,(0.0d0,0.0d0),psih2(is,:,:,ina,jna),nkr)
 
 
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psie1inv(is,:,:,ina),nkr,psie2(is,:,:,ina),nkr,(0.0d0,0.0d0),psipsi1(is,:,:,ina),nkr)
-   	call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psih1inv(is,:,:,ina),nkr,psih2(is,:,:,ina),nkr,(1.0d0,0.0d0),psipsi1(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psie1inv(is,:,:,ina),nkr,hie1(is,:,:,ina),nkr,(0.0d0,0.0d0),psihi1(is,:,:,ina),nkr)
-   	call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psih1inv(is,:,:,ina),nkr,hih1(is,:,:,ina),nkr,(1.0d0,0.0d0),psihi1(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psie1inv(is,:,:,ina),nkr,hie2(is,:,:,ina),nkr,(0.0d0,0.0d0),psihi2(is,:,:,ina),nkr)
-   	call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psih1inv(is,:,:,ina),nkr,hih2(is,:,:,ina),nkr,(1.0d0,0.0d0),psihi2(is,:,:,ina),nkr)
+    !        call dlincg (nkr, psie1(is,:,:,ina,jna),nkr,psie1inv(is,:,:,ina,jna), nkr)
+    !        call dlincg (nkr, psie2(is,:,:,ina,jna),nkr,psie2inv(is,:,:,ina,jna), nkr)
+    !        call dlincg (nkr, psih1(is,:,:,ina,jna),nkr,psih1inv(is,:,:,ina,jna), nkr)
+    !        call dlincg (nkr, psih2(is,:,:,ina,jna),nkr,psih2inv(is,:,:,ina,jna), nkr)
+        psie1inv(is,:,:,ina,jna) = psie1(is,:,:,ina,jna)
+        call zgetrf(nkr,nkr,psie1inv(is,:,:,ina,jna),nkr,ipiv,info)
+        call zgetri(nkr, psie1inv(is,:,:,ina,jna),nkr,ipiv,temp, nkr, info)
+        psie2inv(is,:,:,ina,jna) = psie2(is,:,:,ina,jna)
+        call zgetrf(nkr,nkr,psie2inv(is,:,:,ina,jna),nkr,ipiv,info)
+        call zgetri(nkr, psie2inv(is,:,:,ina,jna),nkr,ipiv,temp, nkr, info)
+        psih1inv(is,:,:,ina,jna) = psih1(is,:,:,ina,jna)
+        call zgetrf(nkr,nkr,psih1inv(is,:,:,ina,jna),nkr,ipiv,info)
+        call zgetri(nkr, psih1inv(is,:,:,ina,jna),nkr,ipiv,temp, nkr, info)
+        psih2inv(is,:,:,ina,jna) = psih2(is,:,:,ina,jna)
+        call zgetrf(nkr,nkr,psih2inv(is,:,:,ina,jna),nkr,ipiv,info)
+        call zgetri(nkr, psih2inv(is,:,:,ina,jna),nkr,ipiv,temp, nkr, info)
 
-!        call dlincg(nkr, psipsi1(is,:,:,ina),nkr,psipsi1inv(is,:,:,ina),nkr)
-    psipsi1inv(is,:,:,ina) = psipsi1(is,:,:,ina)
-    call zgetrf(nkr,nkr,psipsi1inv(is,:,:,ina),nkr,ipiv,info)
-    call zgetri(nkr, psipsi1inv(is,:,:,ina),nkr,ipiv,temp, nkr, info)
+
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psie1inv(is,:,:,ina,jna),nkr,psie2(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),psipsi1(is,:,:,ina,jna),nkr)
+         call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psih1inv(is,:,:,ina,jna),nkr,psih2(is,:,:,ina,jna),nkr,(1.0d0,0.0d0),psipsi1(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psie1inv(is,:,:,ina,jna),nkr,hie1(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),psihi1(is,:,:,ina,jna),nkr)
+         call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psih1inv(is,:,:,ina,jna),nkr,hih1(is,:,:,ina,jna),nkr,(1.0d0,0.0d0),psihi1(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psie1inv(is,:,:,ina,jna),nkr,hie2(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),psihi2(is,:,:,ina,jna),nkr)
+         call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psih1inv(is,:,:,ina,jna),nkr,hih2(is,:,:,ina,jna),nkr,(1.0d0,0.0d0),psihi2(is,:,:,ina,jna),nkr)
+
+    !        call dlincg(nkr, psipsi1(is,:,:,ina,jna),nkr,psipsi1inv(is,:,:,ina,jna),nkr)
+        psipsi1inv(is,:,:,ina,jna) = psipsi1(is,:,:,ina,jna)
+        call zgetrf(nkr,nkr,psipsi1inv(is,:,:,ina,jna),nkr,ipiv,info)
+        call zgetri(nkr, psipsi1inv(is,:,:,ina,jna),nkr,ipiv,temp, nkr, info)
+
+      end do !end jna
+    end do !end ina
   end do !end is
 
   do is=1,sk-1
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psie2inv(is+1,:,:,ina),nkr,psie1(is+1,:,:,ina),nkr,(0.0d0,0.0d0),psipsi2(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psih2inv(is+1,:,:,ina),nkr,psih1(is+1,:,:,ina),nkr,(1.0d0,0.0d0),psipsi2(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psie2inv(is+1,:,:,ina),nkr,hie2(is+1,:,:,ina),nkr,(0.0d0,0.0d0),psihi3(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psih2inv(is+1,:,:,ina),nkr,hih2(is+1,:,:,ina),nkr,(1.0d0,0.0d0),psihi3(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psie2inv(is+1,:,:,ina),nkr,hie1(is+1,:,:,ina),nkr,(0.0d0,0.0d0),psihi4(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psih2inv(is+1,:,:,ina),nkr,hih1(is+1,:,:,ina),nkr,(1.0d0,0.0d0),psihi4(is,:,:,ina),nkr)
-!        call dlincg (nkr, psipsi2(is,:,:,ina),nkr,psipsi2inv(is,:,:,ina),nkr)
-    psipsi2inv(is,:,:,ina) = psipsi2(is,:,:,ina)
-    call zgetrf(nkr,nkr,psipsi2inv(is,:,:,ina),nkr,ipiv,info)
-    call zgetri(nkr, psipsi2inv(is,:,:,ina),nkr,ipiv,temp, nkr, info)
+    do ina = 0, nka
+      do jna = 0, nka
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psie2inv(is+1,:,:,ina,jna),nkr,psie1(is+1,:,:,ina,jna),nkr,(0.0d0,0.0d0),psipsi2(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psih2inv(is+1,:,:,ina,jna),nkr,psih1(is+1,:,:,ina,jna),nkr,(1.0d0,0.0d0),psipsi2(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psie2inv(is+1,:,:,ina,jna),nkr,hie2(is+1,:,:,ina,jna),nkr,(0.0d0,0.0d0),psihi3(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psih2inv(is+1,:,:,ina,jna),nkr,hih2(is+1,:,:,ina,jna),nkr,(1.0d0,0.0d0),psihi3(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psie2inv(is+1,:,:,ina,jna),nkr,hie1(is+1,:,:,ina,jna),nkr,(0.0d0,0.0d0),psihi4(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psih2inv(is+1,:,:,ina,jna),nkr,hih1(is+1,:,:,ina,jna),nkr,(1.0d0,0.0d0),psihi4(is,:,:,ina,jna),nkr)
+!        call dlincg (nkr, psipsi2(is,:,:,ina,jna),nkr,psipsi2inv(is,:,:,ina,jna),nkr)
+        psipsi2inv(is,:,:,ina,jna) = psipsi2(is,:,:,ina,jna)
+        call zgetrf(nkr,nkr,psipsi2inv(is,:,:,ina,jna),nkr,ipiv,info)
+        call zgetri(nkr, psipsi2inv(is,:,:,ina,jna),nkr,ipiv,temp, nkr, info)
+      end do !end jna
+    end do !end ina
   end do !end is
   do is=2,sk-1
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psipsi1inv(is,:,:,ina),nkr,psihi1(is,:,:,ina),nkr,(0.0d0,0.0d0),aa1(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psipsi1inv(is,:,:,ina),nkr,psihi2(is,:,:,ina),nkr,(0.0d0,0.0d0),aa2(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psipsi2inv(is,:,:,ina),nkr,psihi4(is,:,:,ina),nkr,(1.0d0,0.0d0),aa2(is,:,:,ina),nkr)
-    call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psipsi2inv(is,:,:,ina),nkr,psihi3(is,:,:,ina),nkr,(0.0d0,0.0d0),aa3(is,:,:,ina),nkr)
+    do ina = 0, nka
+      do jna = 0, nka
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psipsi1inv(is,:,:,ina,jna),nkr,psihi1(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),aa1(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),psipsi1inv(is,:,:,ina,jna),nkr,psihi2(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),aa2(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psipsi2inv(is,:,:,ina,jna),nkr,psihi4(is,:,:,ina,jna),nkr,(1.0d0,0.0d0),aa2(is,:,:,ina,jna),nkr)
+        call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),psipsi2inv(is,:,:,ina,jna),nkr,psihi3(is,:,:,ina,jna),nkr,(0.0d0,0.0d0),aa3(is,:,:,ina,jna),nkr)
+      end do !end jna
+    end do !end ina
   end do ! end is
 
-!        call dlincg (nkr, hie2(sk,:,:,ina),nkr,hie2inv(sk,:,:,ina),nkr)
-!        call dlincg (nkr, hih2(sk,:,:,ina),nkr,hih2inv(sk,:,:,ina),nkr)
+!        call dlincg (nkr, hie2(sk,:,:,ina,jna),nkr,hie2inv(sk,:,:,ina,jna),nkr)
+!        call dlincg (nkr, hih2(sk,:,:,ina,jna),nkr,hih2inv(sk,:,:,ina,jna),nkr)
+  do ina = 0, nka
+    do jna = 0, nka
+      hie2inv(sk,:,:,ina,jna) = hie2(sk,:,:,ina,jna)
+      call zgetrf(nkr,nkr,hie2inv(sk,:,:,ina,jna),nkr,ipiv,info)
+      call zgetri(nkr, hie2inv(sk,:,:,ina,jna),nkr,ipiv,temp, nkr, info)
+      hih2inv(sk,:,:,ina,jna) = hih2(sk,:,:,ina,jna)
+      call zgetrf(nkr,nkr,hih2inv(sk,:,:,ina,jna),nkr,ipiv,info)
+      call zgetri(nkr, hih2inv(sk,:,:,ina,jna),nkr,ipiv,temp, nkr, info)
 
-  hie2inv(sk,:,:,ina) = hie2(sk,:,:,ina)
-  call zgetrf(nkr,nkr,hie2inv(sk,:,:,ina),nkr,ipiv,info)
-  call zgetri(nkr, hie2inv(sk,:,:,ina),nkr,ipiv,temp, nkr, info)
-  hih2inv(sk,:,:,ina) = hih2(sk,:,:,ina)
-  call zgetrf(nkr,nkr,hih2inv(sk,:,:,ina),nkr,ipiv,info)
-  call zgetri(nkr, hih2inv(sk,:,:,ina),nkr,ipiv,temp, nkr, info)
-
-	aa1(sk,:,:,0)=psihi1(sk,:,:,0)
-	aa2(sk,:,:,0)=psihi2(sk,:,:,0)
+      aa1(sk,:,:,ina,jna)=psihi1(sk,:,:,ina,jna)
+      aa2(sk,:,:,ina,jna)=psihi2(sk,:,:,ina,jna)
+    end do !end jna
+  end do !end ina
 
 	return
-end subroutine  matrix_construct
+end subroutine matrix_construct
 
 
 subroutine matrix_dynamic

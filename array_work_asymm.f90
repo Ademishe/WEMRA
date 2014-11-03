@@ -28,7 +28,7 @@ module array_work
     integer sk,ss00,sk1,sk2,sk3,sdop01,sdop02,sdop03, &
             sdop11,sdop12,sdop21,sdop22,sdop31,sdop32,mk0,ns2,ns4, &
             mkns,ktimemax, kluch_beam, kluch_structur(3),nka,nkr, &
-            nbeam,inbeam,ina,isincos
+            nbeam,inbeam
     real*8  dt,rb0
     real*8  w0,rel_factor,constq, const1, ddz,v0, &
             rt01,rt02,rt03,dz01,dz02,dz03, &
