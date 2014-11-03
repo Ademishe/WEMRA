@@ -26,7 +26,7 @@ end subroutine
 
 subroutine beam_calc(tau)
     real*8 tau
-	integer imm, k12, i, mk, mkk1, is,inr
+	integer imm, k12, i, mk, mkk1, is,inr, ina
     double precision sum0,prmt(5)
     do i=1,2*mkk(inbeam)
         yarray=yarray0(:,inbeam)
@@ -98,7 +98,7 @@ subroutine beam_calc(tau)
        if (kluch_beam.eq.2) then
 	   do is=1,sk
 	   do inr=1,nkr
-         do ina=0,nka-1
+         do ina=0,nka
 	    write (22,901) is,inr,abs(etaplus(is,inr,ina)),abs(etaminus(is,inr,ina)),mk0,mkk(inbeam)
 
 	   end do
@@ -144,7 +144,7 @@ subroutine fct(ttau)
 !               deltaz - текущая координата в локальной системе координат
 
          do inr=1,nkr
-         do ina=0,nka-1
+         do ina=0,nka
 
 !                        уравнения движения
     dery(2*im-1)=dery(2*im-1)+const1*dreal(eznbm(is-1,inr,ina,inbeam)*(cos(ina*alpha(inbeam))* &
@@ -191,7 +191,7 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp)
 
 
             do inr=1,nkr
-                do ina=0,nka-1
+                do ina=0,nka
 
 ! расчет ета -правой части для уравнений возбуждения
 

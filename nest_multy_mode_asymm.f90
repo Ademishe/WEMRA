@@ -104,9 +104,9 @@ program nest_multy_mode_nes
         sk=sdop01+sdop02+sdop03+sk1*(sdop11+sdop12)+sk2*(sdop21+sdop22)+sk3*(sdop31+sdop32)+sdop31
     end if
 		print *, "sk = ", sk
-    call configarr !распределение памяти для основных массивов
-		call read_bessel_zeros
+    call configarr !выделение памяти для основных массивов
 		call init_main_arrays
+		call read_bessel_zeros
 
 ! амплитуды волн, приходящих в систему
     bplus0(nmoder,nmodealpha)		= ampl_enter
@@ -475,8 +475,8 @@ subroutine configfield
             rab1(nkr,nkr), rab2(nkr,nkr), &
             rnplus(sk,nkr,0:nka), rnminus(sk,nkr,0:nka), &
             rnnplus(sk,nkr,0:nka), rnnminus(sk,nkr,0:nka), &
-            uste1(sk,nkr,nkr,0:nka,0:nka), uste2(sk,nkr,nkr,0:nka,0:nka), &
-            usth1(sk,nkr,nkr,0:nka,0:nka), usth2(sk,nkr,nkr,0:nka,0:nka), &
+            uste1(sk,nkr,nkr,0:nka), uste2(sk,nkr,nkr,0:nka), &
+            usth1(sk,nkr,nkr,0:nka), usth2(sk,nkr,nkr,0:nka), &
             xrab(nkr), &
 
 !    это для прогонки
@@ -498,7 +498,7 @@ subroutine field_structure (k,kluch2)
 	use field_nes
   implicit none
 
-  integer inr,is,nr,k,kluch2,ir,iz,nz
+  integer inr,is,nr,k,kluch2,ir,iz,nz, ina
 	real*8       radius,koordz
 	complex*16 er(30),ez(30),a1,a2,a3,a4,ezenter,ezmid1,ezmid2,ezexit, ezaxis,ezbeam,ez65,ezmid(30)
 

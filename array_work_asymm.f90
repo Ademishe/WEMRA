@@ -69,35 +69,35 @@ module array_work
 !    real*8, allocatable:: bm1(:,:,:),bm2(:,:,:),b1m1(:,:,:)
     integer, allocatable::ipiv(:), ipiv2(:)
 
-    complex*16, allocatable::d1plus(:,:,:,:,:),d1minus(:,:,:,:,:), &
-        d2plus(:,:,:,:,:),d2minus(:,:,:,:,:),dd1plus(:,:,:,:,:), &
-        dd1minus(:,:,:,:,:), &
-        dd2plus(:,:,:,:,:),dd2minus(:,:,:,:,:), &
-        b1plus(:,:,:,:,:), b1minus(:,:,:,:,:),b2plus(:,:,:,:,:), &
-        b2minus(:,:,:,:,:), &
-        bb1plus(:,:,:,:,:), bb1minus(:,:,:,:,:),bb2plus(:,:,:,:,:), &
-        bb2minus(:,:,:,:,:), &
-        uste1(:,:,:,:,:), uste2(:,:,:,:,:),usth1(:,:,:,:,:), usth2(:,:,:,:,:), &
-        fgammaplus(:,:,:,:,:), fgammaminus(:,:,:,:,:), &
-        db1plus(:,:,:,:,:), db1minus(:,:,:,:,:), db2plus(:,:,:,:,:), db2minus(:,:,:,:,:), &
-        ddb1plus(:,:,:,:,:), ddb1minus(:,:,:,:,:), &
-        ddb2plus(:,:,:,:,:), ddb2minus(:,:,:,:,:), &
-        ddb1plusinv(:,:,:,:,:), ddb1minusinv(:,:,:,:,:), &
-        ddb2plusinv(:,:,:,:,:), ddb2minusinv(:,:,:,:,:), &
-        dddb1(:,:,:,:,:), dddb2(:,:,:,:,:), &
-        dddb1inv(:,:,:,:,:), dddb2inv(:,:,:,:,:), &
-        alfaplus(:,:,:,:,:), alfaminus(:,:,:,:,:), &
-        betaplus(:,:,:,:,:), betaminus(:,:,:,:,:), &
-        hie1(:,:,:,:,:), hie2(:,:,:,:,:),hih1(:,:,:,:,:), hih2(:,:,:,:,:), &
-        hie2inv(:,:,:,:,:),hih2inv(:,:,:,:,:), &
-        psie1(:,:,:,:,:), psie2(:,:,:,:,:), psih1(:,:,:,:,:), psih2(:,:,:,:,:), &
-        psie1inv(:,:,:,:,:), psie2inv(:,:,:,:,:), psih1inv(:,:,:,:,:), &
-        psih2inv(:,:,:,:,:), &
-        psipsi1(:,:,:,:,:), psipsi2(:,:,:,:,:), &
-        psihi1(:,:,:,:,:), psihi2(:,:,:,:,:),psihi3(:,:,:,:,:),psihi4(:,:,:,:,:), &
-        psipsi1inv(:,:,:,:,:), psipsi2inv(:,:,:,:,:), &
-        uste1inv(:,:,:,:,:),uste2inv(:,:,:,:,:),usth1inv(:,:,:,:,:), &
-        usth2inv(:,:,:,:,:), &
+    complex*16, allocatable::d1plus(:,:,:,:),d1minus(:,:,:,:), &
+        d2plus(:,:,:,:),d2minus(:,:,:,:),dd1plus(:,:,:,:), &
+        dd1minus(:,:,:,:), &
+        dd2plus(:,:,:,:),dd2minus(:,:,:,:), &
+        b1plus(:,:,:,:), b1minus(:,:,:,:),b2plus(:,:,:,:), &
+        b2minus(:,:,:,:), &
+        bb1plus(:,:,:,:), bb1minus(:,:,:,:),bb2plus(:,:,:,:), &
+        bb2minus(:,:,:,:), &
+        uste1(:,:,:,:), uste2(:,:,:,:),usth1(:,:,:,:), usth2(:,:,:,:), &
+        fgammaplus(:,:,:,:), fgammaminus(:,:,:,:), &
+        db1plus(:,:,:,:), db1minus(:,:,:,:), db2plus(:,:,:,:), db2minus(:,:,:,:), &
+        ddb1plus(:,:,:,:), ddb1minus(:,:,:,:), &
+        ddb2plus(:,:,:,:), ddb2minus(:,:,:,:), &
+        ddb1plusinv(:,:,:,:), ddb1minusinv(:,:,:,:), &
+        ddb2plusinv(:,:,:,:), ddb2minusinv(:,:,:,:), &
+        dddb1(:,:,:,:), dddb2(:,:,:,:), &
+        dddb1inv(:,:,:,:), dddb2inv(:,:,:,:), &
+        alfaplus(:,:,:,:), alfaminus(:,:,:,:), &
+        betaplus(:,:,:,:), betaminus(:,:,:,:), &
+        hie1(:,:,:,:), hie2(:,:,:,:),hih1(:,:,:,:), hih2(:,:,:,:), &
+        hie2inv(:,:,:,:),hih2inv(:,:,:,:), &
+        psie1(:,:,:,:), psie2(:,:,:,:), psih1(:,:,:,:), psih2(:,:,:,:), &
+        psie1inv(:,:,:,:), psie2inv(:,:,:,:), psih1inv(:,:,:,:), &
+        psih2inv(:,:,:,:), &
+        psipsi1(:,:,:,:), psipsi2(:,:,:,:), &
+        psihi1(:,:,:,:), psihi2(:,:,:,:),psihi3(:,:,:,:),psihi4(:,:,:,:), &
+        psipsi1inv(:,:,:,:), psipsi2inv(:,:,:,:), &
+        uste1inv(:,:,:,:),uste2inv(:,:,:,:),usth1inv(:,:,:,:), &
+        usth2inv(:,:,:,:), &
         aa1(:,:,:,:), aa2(:,:,:,:),aa3(:,:,:,:), ab(:,:,:), &
         rab1(:,:), rab2(:,:),xrab(:), &
         rnplus(:,:,:), rnminus(:,:,:), rnnplus(:,:,:), rnnminus(:,:,:), &
