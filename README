@@ -3,9 +3,14 @@ Waveguide electromagnetic field analyzer
 This program provides simulation of transmission of electromagnetic field through round waveguide with periodic non-uniformity.
 Configuration file is multi5.cfg; it consists of russian comments and numerical parameters under them.
 
+Bessel zeros can be computed with compute_bessel_zeros.py Python script.
+
 License: MIT
 
 Dependencies:
 GCC 4.9.1
 LAPACK 3.5.0
 
+For Python script:
+Python 3.4
+SciPy 0.14
