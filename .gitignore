@@ -4,3 +4,4 @@ compute_bessel_zeros.py
 *.o
 *.mod
 *.dat
+execute_assym
