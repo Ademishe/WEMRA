@@ -50,15 +50,15 @@ subroutine matrix_construct
           ! do jna=0,nka
             if(is.gt.1 .and. (rt(is-1)-rt(is)).ge.(0.001d0)) then !уменьшается
               uste1(is,i,j,ina)=(0.0d0,0.0d0)
-              uste2(is,i,j,ina)=pfunk(is,i,j,1,0)
-              usth1(is,i,j,ina)=conjg(pfunk(is,j,i,1,0))
+              uste2(is,i,j,ina)=pfunk(is,i,j,1,0,ina)
+              usth1(is,i,j,ina)=conjg(pfunk(is,j,i,1,0,ina))
               usth2(is,i,j,ina)=(0.0d0,0.0d0)
             end if
             if(is.gt.1 .and. (rt(is)-rt(is-1)).gt. (0.001d0)) then !увеличивается
-              uste1(is,i,j,ina)=pfunk(is,i,j,0,1)   !менял i и j местами
+              uste1(is,i,j,ina)=pfunk(is,i,j,0,1,ina)   !менял i и j местами
               uste2(is,i,j,ina)=(0.0d0,0.0d0)
               usth1(is,i,j,ina)=(0.0d0,0.0d0)
-              usth2(is,i,j,ina)=conjg(pfunk(is,j,i,0,1))
+              usth2(is,i,j,ina)=conjg(pfunk(is,j,i,0,1,ina))
             end if
           ! end do !end jna
         end do !end j
@@ -465,15 +465,15 @@ double complex function funk2(is,inr,ina)
 end function
 
 
-double complex function pfunk(is,l,m,Ec,Hc)
+double complex function pfunk(is,l,m,Ec,Hc,nk_index)
 !   pfunk(номер участка, порядок, порядок, ключ для знака, номер моды)
-  integer is, m, l, n, k, Ec, Hc
+  integer is, m, l, n, k, Ec, Hc, nk_index
   complex*16 const_part, part_1, part_2, E_nm, E_kl, integral, temp_int
   real*8 chi_nm, chi_kl
   part_1 = (0.0d0, 0.0d0)
   temp_int = (0.0d0, 0.0d0)
-  n = 0
-  k = 0
+  n = nk_index
+  k = nk_index
 
   chi_nm = mu(m, n)/rt(is-Hc)
   chi_kl = mu(m, n)/rt(is-Hc)
@@ -556,43 +556,43 @@ end function integrate
 subroutine progonka
   integer is
   integer info, ina
-  ina = 0
-
+  do ina = 0, nka
 !    call dlincg (nkr, aa2(2,:,:,ina),nk,rabpinv, nkr)
-  rabpinv(:,:,ina) = aa2(2,:,:,ina)
-  call zgetrf(nkr,nkr,rabpinv,nkr,ipiv2,info)
-  call zgetri(nkr, rabpinv,nkr,ipiv,temp2, nkr, info)
-  call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),rabpinv,nkr,aa3(2,:,:,ina),nkr,(0.0d0,0.0d0),alphap(3,:,:),nkr)
-  call zgemv('n',nkr,nkr,(1.0d0,0.0d0),rabpinv,nkr,ab(2,:,ina),1,(0.0d0,0.0d0),betap(3,:),1)
-
-  do is=3,sk-1
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),aa1(is,:,:,ina),nkr,alphap(is,:,:),nkr,(0.0d0,0.0d0),rabp,nkr)
-
-    rabp(:,:,ina)=-aa2(is,:,:,ina)-rabp(:,:,ina)
-!        call dlincg (nkr, rabp,nkr,rabpinv, nkr)
-    rabpinv = rabp
+    rabpinv(:,:,ina) = aa2(2,:,:,ina)
     call zgetrf(nkr,nkr,rabpinv,nkr,ipiv2,info)
     call zgetri(nkr, rabpinv,nkr,ipiv,temp2, nkr, info)
-    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),rabpinv,nkr,aa3(is,:,:,ina),nkr,(0.0d0,0.0d0),alphap(is+1,:,:),nkr)
-    call zgemv('n',nkr,nkr,(1.0d0,0.0d0),aa1(is,:,:,ina),nkr,betap(is,:),1,(0.0d0,0.0d0),xrabp,1)
-    xrabp=xrabp-ab(is,:,ina)
-    call zgemv('n',nkr,nkr,(1.0d0,0.0d0),rabpinv,nkr,xrabp,1,(0.0d0,0.0d0),betap(is+1,:),1)
-	end do
+    call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),rabpinv,nkr,aa3(2,:,:,ina),nkr,(0.0d0,0.0d0),alphap(3,:,:),nkr)
+    call zgemv('n',nkr,nkr,(1.0d0,0.0d0),rabpinv,nkr,ab(2,:,ina),1,(0.0d0,0.0d0),betap(3,:),1)
 
-  call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),aa1(sk,:,:,ina),nkr,alphap(sk,:,:),nkr,(0.0d0,0.0d0),rabp,nkr)
-  rabp=-aa2(sk,:,:,:)-rabp
+    do is=3,sk-1
+      call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),aa1(is,:,:,ina),nkr,alphap(is,:,:),nkr,(0.0d0,0.0d0),rabp,nkr)
+
+      rabp(:,:,ina)=-aa2(is,:,:,ina)-rabp(:,:,ina)
+!        call dlincg (nkr, rabp,nkr,rabpinv, nkr)
+      rabpinv = rabp
+      call zgetrf(nkr,nkr,rabpinv,nkr,ipiv2,info)
+      call zgetri(nkr, rabpinv,nkr,ipiv,temp2, nkr, info)
+      call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),rabpinv,nkr,aa3(is,:,:,ina),nkr,(0.0d0,0.0d0),alphap(is+1,:,:),nkr)
+      call zgemv('n',nkr,nkr,(1.0d0,0.0d0),aa1(is,:,:,ina),nkr,betap(is,:),1,(0.0d0,0.0d0),xrabp,1)
+      xrabp=xrabp-ab(is,:,ina)
+      call zgemv('n',nkr,nkr,(1.0d0,0.0d0),rabpinv,nkr,xrabp,1,(0.0d0,0.0d0),betap(is+1,:),1)
+    end do
+
+    call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),aa1(sk,:,:,ina),nkr,alphap(sk,:,:),nkr,(0.0d0,0.0d0),rabp,nkr)
+    rabp=-aa2(sk,:,:,:)-rabp
 !    call dlincg (nkr, rabp,nkr,rabpinv, nkr)
-  rabpinv = rabp
-  call zgetrf(nkr,nkr,rabpinv,nkr,ipiv2,info)
-  call zgetri(nkr, rabpinv,nkr,ipiv2,temp2, nkr, info)
-  call zgemv('n',nkr,nkr,(1.0d0,0.0d0),aa1(sk,:,:,ina),nkr,betap(sk,:),1,(0.0d0,0.0d0),xrabp,1)
-  xrabp=xrabp-ab(sk,:,ina)
-  call zgemv('n',nkr,nkr,(1.0d0,0.0d0),rabpinv,nkr,xrabp,1,(0.0d0,0.0d0),betap(sk+1,:),1)
-  xbplus(sk,:,ina)=betap(sk+1,:)
-  do is=sk-1,2,-1
-    call zgemv('n',nkr,nkr,(1.0d0,0.0d0),alphap(is+1,:,:),nkr,xbplus(is+1,:,ina),1,(0.0d0,0.0d0),xbplus(is,:,ina),1)
-    xbplus(is,:,ina)=betap(is+1,:)+xbplus(is,:,ina)
-	end do
+    rabpinv = rabp
+    call zgetrf(nkr,nkr,rabpinv,nkr,ipiv2,info)
+    call zgetri(nkr, rabpinv,nkr,ipiv2,temp2, nkr, info)
+    call zgemv('n',nkr,nkr,(1.0d0,0.0d0),aa1(sk,:,:,ina),nkr,betap(sk,:),1,(0.0d0,0.0d0),xrabp,1)
+    xrabp=xrabp-ab(sk,:,ina)
+    call zgemv('n',nkr,nkr,(1.0d0,0.0d0),rabpinv,nkr,xrabp,1,(0.0d0,0.0d0),betap(sk+1,:),1)
+    xbplus(sk,:,ina)=betap(sk+1,:)
+    do is=sk-1,2,-1
+      call zgemv('n',nkr,nkr,(1.0d0,0.0d0),alphap(is+1,:,:),nkr,xbplus(is+1,:,ina),1,(0.0d0,0.0d0),xbplus(is,:,ina),1)
+      xbplus(is,:,ina)=betap(is+1,:)+xbplus(is,:,ina)
+    end do
+  end do ! end ina
 	return
 end subroutine progonka
 
