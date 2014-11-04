@@ -96,19 +96,19 @@ end subroutine
 
 
 subroutine eid
-    integer inr,is,ina,inbm
-    do is=1,sk
-        do ina=0,nka
-            do  inr=1,nkr
-                do  inbm=1,nbeam
-                    eznbm(is,inr,ina,inbm)= ce*sqrt(abs(zn(is,inr,ina))/pi)* &
-                      (mu(inr,ina)/(abs(gam(is,inr,ina))*(rt(is)**2)))* &
-                      bessel_jn(0, mu(inr,ina)*rb(inbm)/rt(is))/bessel_jn(1, mu(inr,ina))
-                end do
-            end do
+  integer inr,is,ina,inbm
+  do is=1,sk
+    do ina=0,nka
+      do  inr=1,nkr
+        do  inbm=1,nbeam
+          eznbm(is,inr,ina,inbm)= ce*sqrt(abs(zn(is,inr,ina))/pi)* &
+            (mu(inr,ina)/(abs(gam(is,inr,ina))*(rt(is)**2)))* &
+            bessel_jn(0, mu(inr,ina)*rb(inbm)/rt(is))/bessel_jn(1, mu(inr,ina))
         end do
+      end do
     end do
-    return
+  end do
+  return
 end subroutine
 
 

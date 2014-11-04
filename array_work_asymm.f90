@@ -66,7 +66,6 @@ module array_work
 
     real*8, allocatable:: amplxplus(:),amplxminus(:)
 
-!    real*8, allocatable:: bm1(:,:,:),bm2(:,:,:),b1m1(:,:,:)
     integer, allocatable::ipiv(:), ipiv2(:)
 
     complex*16, allocatable::d1plus(:,:,:,:),d1minus(:,:,:,:), &
@@ -103,11 +102,11 @@ module array_work
         rnplus(:,:,:), rnminus(:,:,:), rnnplus(:,:,:), rnnminus(:,:,:), &
         brne1(:,:,:),brne2(:,:,:),brnh1(:,:,:),brnh2(:,:,:), &
         psibrn1(:,:,:),psibrn2(:,:,:), &
-        hipsisk(:,:,:),temp(:,:),temp2(:,:)
+        hipsisk(:,:,:),temp(:,:),temp2(:,:), exit_sum(:,:)
 !****************************************************
 ! для прогонки
 !*****************************************************
-    complex*16,allocatable:: alphap(:,:,:),betap(:,:),rabp(:,:,:), &
-        rabpinv(:,:,:),xrabp(:)
+    complex*16,allocatable:: alphap(:,:,:),betap(:,:),rabp(:,:), &
+        rabpinv(:,:),xrabp(:)
 
 end module array_work

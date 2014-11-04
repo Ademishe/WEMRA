@@ -207,25 +207,17 @@ subroutine manager (stepwrite,iw)
 !     то такое istwr? - это счетчик шагов при итерировании, нужен для записи на диск
   	istwr=istwr+1
     tau=tau+dt
-		print *, "matrix_dynamic"
     call matrix_dynamic
-		print *, "progonka"
   	call progonka
-!	   do is=2,sk
-!	   do i=1,nkr
-
-!	    xbplus(is,:,:,1)=xbplus(is-1,:,:,1)*exp(-ce*gam(is,i)*dz(is))
-!	   end do
-!	   end do
-		print *, "field_calc"
     call field_calc
+
     i11=1
     if (k.ge.(ktimemax-128)) then
-      	i11=1+k-(ktimemax-128)
-        fffw(i11)=xbplus(sk,1,0)
-        fffb(i11)=xbminus(1,1,0)
-      end if
-      etaplus = 0.0d0
+  		i11=1+k-(ktimemax-128)
+      fffw(i11)=xbplus(sk,1,0)
+      fffb(i11)=xbminus(1,1,0)
+    end if
+    etaplus = 0.0d0
     etaminus= 0.0d0
    !   xnplus  = xbplus
     !  xnminus = xbminus
@@ -268,9 +260,7 @@ subroutine manager (stepwrite,iw)
   end do ! конец основного цикла
 
   if(kluch_beam.eq.0) then
-		print *, "field_power"
   	call field_power(ktimemax,2)
-		print *, "field_power"
     call field_power(ktimemax,1)
   else
     call field_power(ktimemax,1)
@@ -423,10 +413,7 @@ end subroutine
 subroutine configfield
 	use array_work
 
-!      allocate (
-!        bm1(sk,nkr,nka),bm2(sk,nkr,nka),b1m1(sk,nkr,nka))
-!       временные массивы
-  allocate(aa1(sk,nkr,nkr,0:nka),aa2(sk,nkr,nkr,0:nalpha), &
+  allocate(aa1(sk,nkr,nkr,0:nka),aa2(sk,nkr,nkr,0:nka), &
             aa3(sk,nkr,nkr,0:nka), &
             alfaplus(sk,nkr,nkr,0:nka),alfaminus(sk,nkr,nkr,0:nka), &
             betaplus(sk,nkr,nkr,0:nka),betaminus(sk,nkr,nkr,0:nka), &
@@ -481,8 +468,8 @@ subroutine configfield
 
 !    это для прогонки
             alphap(sk,nkr,nkr),betap(sk+1,nkr), &
-            rabp(nkr,nkr,0:nka),rabpinv(nkr,nkr,0:nka), &
-            xrabp(nkr))
+            rabp(nkr,nkr),rabpinv(nkr,nkr), &
+            xrabp(nkr), exit_sum(nkr, 0:nka))
 	allocate(temp(nkr,nkr), temp2(nkr,nkr))
   allocate(ipiv(nkr), ipiv2(nkr))
   continue
@@ -628,19 +615,18 @@ subroutine field_power(k,kluch1)
   if (kluch1.eq.2) then
     do inr=1,nkr
       do ina=0,nka
-        xrab(inr)= (xbplus(sk,inr,ina)+xbminus(sk,inr,ina))*zn(sk,inr,ina)/abs(zn(sk,inr,ina))
+        exit_sum(inr, ina) = (xbplus(sk,inr,ina)+xbminus(sk,inr,ina))*zn(sk,inr,ina)/abs(zn(sk,inr,ina))
         xrabp(inr)= (xbplus(1,inr,ina)+xbminus(1,inr,ina))*zn(1,inr,ina)/abs(zn(1,inr,ina))
       end do
 		end do
-    ! powerexit=0.5d0*real(dot_product(xrab(:),(xbplus(sk,:,ina,isincos)-xbminus(sk,:,ina,isincos))))/(beam_curr*beam_voltage*1000.0d0)
-		print *, xbplus(sk,:,0)
-		print *, xbminus(sk,:,0)
-		powerexit=0.5d0*real(dot_product(xrab,(xbplus(sk,:,0)-xbminus(sk,:,0))))/(beam_curr*beam_voltage*1000.0d0)
-		print *, "beam_curr =", beam_curr, "beam_voltage", beam_voltage
+		do ina = 0, nka
+			powerexit = powerexit + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(sk,:,ina)-xbminus(sk,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
+		end do
+		! print *, "beam_curr =", beam_curr, "beam_voltage", beam_voltage
     powerenter=0.5d0*real(dot_product(xrabp(:),(xbplus(1,:,0)-xbminus(1,:,0))))/(beam_curr*beam_voltage*1000.0d0)
     powersum= -( powerenter-powerexit) + sum
 		print *, "POWER_EXIT =", powerexit
-    print* ,'w0=',w0,'k',k,'power=',powerexit
+    ! print* ,'w0=',w0,'k',k,'power=',powerexit
     dva_d_na_lambda=periodz1*w0/(pi*3.0d0)
 
     write (21,922) dva_d_na_lambda,w0,beam_voltage,k,0,powerenter,powerexit,sum,powersum
@@ -657,30 +643,22 @@ subroutine freeallmem
 
 	deallocate(temp, temp2)
 	deallocate(ipiv, ipiv2)
-	deallocate( &
-!      очистка памяти, выделенной для основных массивов
-				gam,zn,eznbm,ernbm, &
-				xnplus,xnminus, &
-				dxnplus,dxnminus, &
-				xbplus,xbminus, &
-				dxbplus,dxbminus, &
-				bplus0,bminussk, &
-				etaplus,etaminus, &
-				amplxplus,amplxminus)
-
-	deallocate( &
-!       очистка памяти, выделенной для пучка
-				alpha, &
-				yarray0,yarray,yarray1, &
-				dery,aux, &
-				velocity, velocity1)
-
-	deallocate( &
-!     очистка памяти, выделенной для поля
-				aa1, aa2,aa3, &
-				alfaplus, alfaminus, &
-				betaplus, betaminus, &
-				ab, &
+	deallocate(gam,zn,eznbm,ernbm, &
+							xnplus,xnminus, &
+							dxnplus,dxnminus, &
+							xbplus,xbminus, &
+							dxbplus,dxbminus, &
+							bplus0,bminussk, &
+							etaplus,etaminus, &
+							amplxplus,amplxminus)
+	deallocate(alpha, &
+							yarray0,yarray,yarray1, &
+							dery,aux, &
+							velocity, velocity1)
+	deallocate(aa1, aa2,aa3, &
+							alfaplus, alfaminus, &
+							betaplus, betaminus, &
+							ab, &
 				b1plus, b1minus, &
 				b2plus, b2minus, &
 				bb1plus, bb1minus, &
@@ -721,6 +699,7 @@ subroutine freeallmem
 			hie1, hie2,hih1, hih2, &
 			psipsi2,psipsi1, &
 			uste1inv,uste2inv, &
-			usth1inv,usth2inv)
+			usth1inv,usth2inv, &
+			exit_sum)
 	return
 end subroutine
