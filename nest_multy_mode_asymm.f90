@@ -161,20 +161,14 @@ end program nest_multy_mode_nes
 
 
 subroutine manager (stepwrite,iw)
-!     управляющая процессом во времени
-
 	use array_work
 	use beam_nes
 	use field_nes
-
   implicit none
+
   integer k,i11,is,in,stepwrite,iw,i,im,istwr
   real*8 tau,rel_coord
-
-!     double complex fw(200)
-!     double precision fff(200)
   complex fffw(256),fffb(256)
-
 
   dxnplus = 0.0d0
   dxnminus= 0.0d0
@@ -203,6 +197,7 @@ subroutine manager (stepwrite,iw)
 !            main cycle
   tau=0.0d0
   istwr=0
+	print *, "ktimemax=", ktimemax
   do k=1,ktimemax
 !     то такое istwr? - это счетчик шагов при итерировании, нужен для записи на диск
   	istwr=istwr+1
@@ -219,10 +214,11 @@ subroutine manager (stepwrite,iw)
     end if
     etaplus = 0.0d0
     etaminus= 0.0d0
-   !   xnplus  = xbplus
-    !  xnminus = xbminus
-  !    dxnplus = dxbplus
-!	dxnminus= dxbminus
+		xnplus  = xbplus   ! 0.0d0  ! xbplus
+    xnminus = xbminus  ! xbminus
+    dxnplus = dxbplus  ! dxbplus
+    dxnminus= dxbminus ! dxbminus
+
   	do inbeam=1,nbeam
   		if (kluch_beam.eq.2 .and. k.eq.1) then 	   ! режим заданного тока
     		call beam_calc (tau)
@@ -231,18 +227,9 @@ subroutine manager (stepwrite,iw)
       if(kluch_beam.eq.1)  then           ! самосогласованная задача
       	call beam_calc (tau)
       end if
-          ! if(kluch_beam.eq.0)  then           ! холодная задача
-! empty condition???
-          ! end if
     end do
     if (istwr.eq.stepwrite) then
   		if (kluch_beam.eq.1) then
-!            write (22,*) 'k=',k
-!	  	  write(4,*) k
-!		  write(4,*)'xbplus'
-!		  write(4,*) xbplus
-!            write(4,*)'xbminus'
-!		  write(4,*) xbminus
       	do inbeam=1,nbeam
         	do im=1,mkk(inbeam)
           	rel_coord=ddz*(im-1)-yarray(2*im)
@@ -597,6 +584,7 @@ subroutine field_power(k,kluch1)
 
   integer inr,is,k,kluch1
 	real power,powerenter,powerexit,powersum,powerim,powerplus,powerminus, dva_d_na_lambda
+	powerexit = 0.0d0
 !	double complex xrab1(20)
   if (kluch1.eq.1) then
     do is=1,sk
