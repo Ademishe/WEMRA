@@ -170,18 +170,18 @@ subroutine manager (stepwrite,iw)
   real*8 tau,rel_coord
   complex fffw(256),fffb(256)
 
-  dxnplus = 0.0d0
-  dxnminus= 0.0d0
-  xbplus(:,:,:)  = 0.0d0
-  xbminus(:,:,:) = 0.0d0
-  dxbplus = 0.0d0
-  dxbminus= 0.0d0
-  etaplus = 0.0d0
-  etaminus= 0.0d0
-  xbplus(1,:,:) = bplus0
-  xnplus(1,:,:) = bplus0
-  xnminus(sk,:,:)=bminussk
-  xbminus(sk,:,:)=bminussk
+  dxnplus =						(0.0d0,0.0d0)
+  dxnminus =					(0.0d0,0.0d0)
+  xbplus(:,:,:) =			(0.0d0,0.0d0)
+  xbminus(:,:,:) =		(0.0d0,0.0d0)
+  dxbplus =						(0.0d0,0.0d0)
+  dxbminus =					(0.0d0,0.0d0)
+  etaplus =						(0.0d0,0.0d0)
+  etaminus =					(0.0d0,0.0d0)
+  xbplus(1,:,:) = 		bplus0
+  xnplus(1,:,:) = 		bplus0
+  xnminus(sk,:,:) =		bminussk
+  xbminus(sk,:,:) =		bminussk
 
 	do inbeam=1,nbeam
   	call beam_begin
@@ -214,10 +214,10 @@ subroutine manager (stepwrite,iw)
     end if
     etaplus = 0.0d0
     etaminus= 0.0d0
-		xnplus  = xbplus   ! 0.0d0  ! xbplus
-    xnminus = xbminus  ! xbminus
-    dxnplus = dxbplus  ! dxbplus
-    dxnminus= dxbminus ! dxbminus
+		xnplus(:,:,:) = xbplus(:,:,:)
+    xnminus(:,:,:) = xbminus(:,:,:)
+    dxnplus(:,:,:) = dxbplus(:,:,:)
+    dxnminus(:,:,:) = dxbminus(:,:,:)
 
   	do inbeam=1,nbeam
   		if (kluch_beam.eq.2 .and. k.eq.1) then 	   ! режим заданного тока
@@ -608,6 +608,7 @@ subroutine field_power(k,kluch1)
       end do
 		end do
 		do ina = 0, nka
+			print *, "ina =", ina, xbplus(sk,:,ina)
 			powerexit = powerexit + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(sk,:,ina)-xbminus(sk,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
 		end do
 		! print *, "beam_curr =", beam_curr, "beam_voltage", beam_voltage
