@@ -75,7 +75,7 @@ subroutine matrix_construct
         dd2plus(is,i,i,ina)= (fexp(is,i,1,1,ina)+fexp(is,i,-1,1,ina))*(-fdminus)*dz(is)/2.0d0
         dd2minus(is,i,i,ina)=(fexp(is,i,1,-1,ina)+fexp(is,i,-1,-1,ina))*(-fdplus)*dz(is)/2.0d0
 
-        if (i.le.nopen(is)) then
+        if (mu(i,ina)/rt(is) .le. gam0) then
           b1plus(is,i,i,ina)= -fbplus*dz(is)
           b1minus(is,i,i,ina)=-fbminus*funk1(is,i,ina)
           b2plus(is,i,i,ina)= -fbminus*funk1(is,i,ina)
@@ -521,14 +521,14 @@ end function integrate
 subroutine progonka
   integer is
   integer info, ina
-  betap(:,:) = (0.0d0, 0.0d0)
-  alphap(:,:,:) = (0.0d0, 0.0d0)
-  rabp(:,:) = (0.0d0, 0.0d0)
   do ina = 0, nka
+    betap(:,:) = (0.0d0, 0.0d0)
+    alphap(:,:,:) = (0.0d0, 0.0d0)
+    rabp(:,:) = (0.0d0, 0.0d0)
 !    call dlincg (nkr, aa2(2,:,:,ina),nk,rabpinv, nkr)
     rabpinv(:,:) = aa2(2,:,:,ina)
     call zgetrf(nkr,nkr,rabpinv(:,:),nkr,ipiv2,info)
-    call zgetri(nkr, rabpinv(:,:),nkr,ipiv,temp2, nkr, info)
+    call zgetri(nkr, rabpinv(:,:),nkr,ipiv2,temp2, nkr, info)
     call zgemm('n','n',nkr,nkr,nkr,(-1.0d0,0.0d0),rabpinv(:,:),nkr,aa3(2,:,:,ina),nkr,(0.0d0,0.0d0),alphap(3,:,:),nkr)
     call zgemv('n',nkr,nkr,(1.0d0,0.0d0),rabpinv(:,:),nkr,ab(2,:,ina),1,(0.0d0,0.0d0),betap(3,:),1)
 

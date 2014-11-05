@@ -23,7 +23,6 @@ module array_work
 !    rb- радиус потока
 !    gam0 = w0/c
 !    wh0,wh,dw - частоты, используемые при определении спектра
-!    isincos- вариант распределения по углу- синус или косинус
 
     integer sk,ss00,sk1,sk2,sk3,sdop01,sdop02,sdop03, &
             sdop11,sdop12,sdop21,sdop22,sdop31,sdop32,mk0,ns2,ns4, &
@@ -50,7 +49,7 @@ module array_work
 !    dz(:)-  длины регулярных участков (участков гладкого волновода)
 !    rt(:)-   радиусы регулярных участков волновода
 !    mu(:,:),nu(:) -  корни функций бесселя
-    integer, allocatable:: nopen(:),mkk(:)
+    integer, allocatable:: mkk(:)
 
     real*8, allocatable:: &
         zs(:),dz(:),rt(:),rb(:), mu(:,:),nu(:),alpha(:), &

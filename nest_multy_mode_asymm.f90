@@ -103,6 +103,9 @@ program nest_multy_mode_nes
     else
         sk=sdop01+sdop02+sdop03+sk1*(sdop11+sdop12)+sk2*(sdop21+sdop22)+sk3*(sdop31+sdop32)+sdop31
     end if
+		print *, "nkr =", nkr
+		print *, "nka =", nka
+		print *, "ktimemax =", ktimemax
 		print *, "sk = ", sk
     call configarr !выделение памяти для основных массивов
 		call init_main_arrays
@@ -202,7 +205,10 @@ subroutine manager (stepwrite,iw)
 !     то такое istwr? - это счетчик шагов при итерировании, нужен для записи на диск
   	istwr=istwr+1
     tau=tau+dt
+		! print *, ab(:,:,:)
     call matrix_dynamic
+		! print *, "after -------"
+		! print *, ab(:,:,:)
   	call progonka
     call field_calc
 
@@ -330,7 +336,6 @@ end
 
 subroutine configarr
 	use array_work
-  allocate(nopen(sk))
   allocate(zs(sk+2),dz(sk),rt(sk),mu(50,0:10),nu(20),rb(nbeam), &
 					alpha(nbeam),mkk(nbeam))
   allocate(gam(sk,nkr,0:nka),zn(sk,nkr,0:nka), &
@@ -347,7 +352,6 @@ end subroutine configarr
 
 subroutine init_main_arrays
 	use array_work
-	nopen(:)						= 0
 	zs(:)								= 0.0d0
 	dz(:)								= 0.0d0
 	rt(:)								= 0.0d0
@@ -576,9 +580,6 @@ end subroutine
 
 
 subroutine field_power(k,kluch1)
-
-! определение распределения поля по радиусу
-
   use array_work
 	use field_nes
 

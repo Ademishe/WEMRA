@@ -79,13 +79,10 @@ end subroutine
 
 
 subroutine gazel1
-! определение постоянных распространения, волновых сопротивлений
-! и множителя для поля в  области пучка
   integer is,inr,ina
   do is=1,sk
-    do ina=0,nka
-      do  inr=1,nkr
-        if (mu(inr,ina)/rt(is).le. gam0) nopen(is)=inr
+    do  inr = 1, nkr
+      do ina = 0, nka
         gam(is,inr,ina)=conjg(sqrt((gam0**2-(mu(inr,ina)/rt(is))**2)*ee))
         zn(is,inr,ina)=376.7d0*(gam(is,inr,ina))/gam0
       end do
