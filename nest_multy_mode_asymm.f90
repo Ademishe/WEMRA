@@ -114,8 +114,6 @@ program nest_multy_mode_nes
 ! амплитуды волн, приходящих в систему
     bplus0(nmoder,nmodealpha)		= ampl_enter
     bminussk(nmoder,nmodealpha)	= ampl_exit
-
-
 !      sk - число регулярных участков, dz- период
 !      nk-число мод, w0- рабочая частота
 !      curn- ток потока, beam_voltage- напряжение
@@ -186,29 +184,17 @@ subroutine manager (stepwrite,iw)
   xnminus(sk,:,:) =		bminussk
   xbminus(sk,:,:) =		bminussk
 
-	do inbeam=1,nbeam
-  	call beam_begin
-    k=0
-    if(kluch_beam.eq.0)  then
-    	do im=1,mkk(inbeam)
-      	rel_coord=ddz*(im-1)-yarray(2*im)
-        write (23,903) k,im, yarray(2*im),rel_coord,yarray(2*im-1),mkk,mk0
-    	end do
-    end if
-  end do
-
-!            main cycle
+	! call beam_begin
+! main cycle
   tau=0.0d0
   istwr=0
+	print *, rt(:)
 	print *, "ktimemax=", ktimemax
   do k=1,ktimemax
 !     то такое istwr? - это счетчик шагов при итерировании, нужен для записи на диск
   	istwr=istwr+1
     tau=tau+dt
-		! print *, ab(:,:,:)
     call matrix_dynamic
-		! print *, "after -------"
-		! print *, ab(:,:,:)
   	call progonka
     call field_calc
 
@@ -218,38 +204,13 @@ subroutine manager (stepwrite,iw)
       fffw(i11)=xbplus(sk,1,0)
       fffb(i11)=xbminus(1,1,0)
     end if
-    etaplus = 0.0d0
-    etaminus= 0.0d0
+    etaplus = (0.0d0,0.0d0)
+    etaminus= (0.0d0,0.0d0)
 		xnplus(:,:,:) = xbplus(:,:,:)
     xnminus(:,:,:) = xbminus(:,:,:)
     dxnplus(:,:,:) = dxbplus(:,:,:)
     dxnminus(:,:,:) = dxbminus(:,:,:)
-
-  	do inbeam=1,nbeam
-  		if (kluch_beam.eq.2 .and. k.eq.1) then 	   ! режим заданного тока
-    		call beam_calc (tau)
-				print* ,'w0=',w0,'k=',k
-      end if
-      if(kluch_beam.eq.1)  then           ! самосогласованная задача
-      	call beam_calc (tau)
-      end if
-    end do
-    if (istwr.eq.stepwrite) then
-  		if (kluch_beam.eq.1) then
-      	do inbeam=1,nbeam
-        	do im=1,mkk(inbeam)
-          	rel_coord=ddz*(im-1)-yarray(2*im)
-            write (23,903) k,im, yarray(2*im),rel_coord,yarray(2*im-1),mkk,mk0
-          end do
-        end do
-      end if
-      call field_structure(k,1)
-      call field_structure(k,2)
-      istwr=0
-    end if
-    if(kluch_beam.eq.1) then
-    	call field_power(k,2)
-    end if
+		if (kluch_beam.eq.2 .and. k.eq.1) call beam_calc(tau)
   end do ! конец основного цикла
 
   if(kluch_beam.eq.0) then
@@ -258,8 +219,8 @@ subroutine manager (stepwrite,iw)
   else
     call field_power(ktimemax,1)
     call field_power(ktimemax,2)
-    call field_structure (ktimemax,1)
-    call field_structure (ktimemax,2)
+    call field_structure(ktimemax,1)
+    call field_structure(ktimemax,2)
   end if
   if (ktimemax.ge.128) then
     call spektr(fffw,fffb,w0,wh)
@@ -276,7 +237,7 @@ subroutine spektr(seq1,seq2,w0, w1)
     parameter (n=128)
 
 !      integer    i, nout
-    real       twopi,w0,w1, fow(128),bcw(128),ww
+    real*8       twopi,w0,w1, fow(128),bcw(128),ww
     complex    c,cexp, coef(128), seq1(128),seq2(128)
     intrinsic  cexp
 
@@ -322,7 +283,7 @@ subroutine spektr(seq1,seq2,w0, w1)
 end
 
 subroutine norma1(a,n)
-    real a(256),aa
+    real*8 a(128),aa
     integer n,i
     aa=0.0
     do 1 i=1,n
@@ -336,16 +297,16 @@ end
 
 subroutine configarr
 	use array_work
-  allocate(zs(sk+2),dz(sk),rt(sk),mu(50,0:10),nu(20),rb(nbeam), &
+  allocate(zs(sk+2),dz(sk),rt(sk),mu(50,0:10),rb(nbeam), &
 					alpha(nbeam),mkk(nbeam))
-  allocate(gam(sk,nkr,0:nka),zn(sk,nkr,0:nka), &
-					eznbm(sk,nkr,0:nka,nbeam),ernbm(sk,nkr,0:nka,nbeam), &
-          xnplus(sk,nkr,0:nka),xnminus(sk,nkr,0:nka), &
-          dxnplus(sk,nkr,0:nka),dxnminus(sk,nkr,0:nka), &
-          xbplus(sk,nkr,0:nka),xbminus(sk,nkr,0:nka), &
-          dxbplus(sk,nkr,0:nka),dxbminus(sk,nkr,0:nka), &
-          bplus0(nkr,0:nka),bminussk(nkr,0:nka), &
-          etaplus(sk,nkr,0:nka),etaminus(sk,nkr,0:nka))
+  allocate(	gam(sk,nkr,0:nka),					zn(sk,nkr,0:nka), &
+						eznbm(sk,nkr,0:nka,nbeam),	ernbm(sk,nkr,0:nka,nbeam), &
+          	xnplus(sk,nkr,0:nka),				xnminus(sk,nkr,0:nka), &
+          	dxnplus(sk,nkr,0:nka),			dxnminus(sk,nkr,0:nka), &
+          	xbplus(sk,nkr,0:nka),				xbminus(sk,nkr,0:nka), &
+          	dxbplus(sk,nkr,0:nka),			dxbminus(sk,nkr,0:nka), &
+          	bplus0(nkr,0:nka),					bminussk(nkr,0:nka), &
+          	etaplus(sk,nkr,0:nka),			etaminus(sk,nkr,0:nka))
   allocate(amplxplus(ktimemax),amplxminus(ktimemax))
   return
 end subroutine configarr
@@ -356,7 +317,6 @@ subroutine init_main_arrays
 	dz(:)								= 0.0d0
 	rt(:)								= 0.0d0
 	mu(:,:)							= 0.0d0
-	nu(:)								= 0.0d0
 	rb(:)								= 0.0d0
 	alpha(:)						= 0.0d0
 	mkk(:)							= 0
@@ -404,63 +364,60 @@ end subroutine
 subroutine configfield
 	use array_work
 
-  allocate(aa1(sk,nkr,nkr,0:nka),aa2(sk,nkr,nkr,0:nka), &
-            aa3(sk,nkr,nkr,0:nka), &
-            alfaplus(sk,nkr,nkr,0:nka),alfaminus(sk,nkr,nkr,0:nka), &
-            betaplus(sk,nkr,nkr,0:nka),betaminus(sk,nkr,nkr,0:nka), &
-            d1plus(sk,nkr,nkr,0:nka),d1minus(sk,nkr,nkr,0:nka), &
-            d2plus(sk,nkr,nkr,0:nka),d2minus(sk,nkr,nkr,0:nka), &
-            db1plus(sk,nkr,nkr,0:nka),db1minus(sk,nkr,nkr,0:nka), &
-            db2plus(sk,nkr,nkr,0:nka),db2minus(sk,nkr,nkr,0:nka), &
-            dd1plus(sk,nkr,nkr,0:nka),dd1minus(sk,nkr,nkr,0:nka), &
-            dd2plus(sk,nkr,nkr,0:nka),dd2minus(sk,nkr,nkr,0:nka), &
-            ddb1plus(sk,nkr,nkr,0:nka),ddb1minus(sk,nkr,nkr,0:nka), &
-            ddb2plus(sk,nkr,nkr,0:nka),ddb2minus(sk,nkr,nkr,0:nka), &
-            dddb1(sk,nkr,nkr,0:nka),dddb2(sk,nkr,nkr,0:nka), &
-            hie1(sk,nkr,nkr,0:nka),hie2(sk,nkr,nkr,0:nka), &
-            hih1(sk,nkr,nkr,0:nka),hih2(sk,nkr,nkr,0:nka), &
-            psipsi1(sk,nkr,nkr,0:nka),psipsi2(sk,nkr,nkr,0:nka), &
-            uste1inv(sk,nkr,nkr,0:nka),uste2inv(sk,nkr,nkr,0:nka), &
-            usth1inv(sk,nkr,nkr,0:nka),usth2inv(sk,nkr,nkr,0:nka))
+  allocate(	aa1(sk,nkr,nkr,0:nka),				aa2(sk,nkr,nkr,0:nka),	aa3(sk,nkr,nkr,0:nka), &
+            alfaplus(sk,nkr,nkr,0:nka),		alfaminus(sk,nkr,nkr,0:nka), &
+            betaplus(sk,nkr,nkr,0:nka),		betaminus(sk,nkr,nkr,0:nka), &
+            d1plus(sk,nkr,nkr,0:nka),			d1minus(sk,nkr,nkr,0:nka), &
+            d2plus(sk,nkr,nkr,0:nka),			d2minus(sk,nkr,nkr,0:nka), &
+            db1plus(sk,nkr,nkr,0:nka),		db1minus(sk,nkr,nkr,0:nka), &
+            db2plus(sk,nkr,nkr,0:nka),		db2minus(sk,nkr,nkr,0:nka), &
+            dd1plus(sk,nkr,nkr,0:nka),		dd1minus(sk,nkr,nkr,0:nka), &
+            dd2plus(sk,nkr,nkr,0:nka),		dd2minus(sk,nkr,nkr,0:nka), &
+            ddb1plus(sk,nkr,nkr,0:nka),		ddb1minus(sk,nkr,nkr,0:nka), &
+            ddb2plus(sk,nkr,nkr,0:nka),		ddb2minus(sk,nkr,nkr,0:nka), &
+            dddb1(sk,nkr,nkr,0:nka),			dddb2(sk,nkr,nkr,0:nka), &
+            hie1(sk,nkr,nkr,0:nka),				hie2(sk,nkr,nkr,0:nka), &
+            hih1(sk,nkr,nkr,0:nka),				hih2(sk,nkr,nkr,0:nka), &
+            psipsi1(sk,nkr,nkr,0:nka),		psipsi2(sk,nkr,nkr,0:nka), &
+            uste1inv(sk,nkr,nkr,0:nka),		uste2inv(sk,nkr,nkr,0:nka), &
+            usth1inv(sk,nkr,nkr,0:nka),		usth2inv(sk,nkr,nkr,0:nka))
 
 !  массивы, необходимые всегда для вычисления правых частей в ур. прогонки
-  allocate(ab(sk,nkr,0:nka), &
-            b1plus(sk,nkr,nkr,0:nka), b1minus(sk,nkr,nkr,0:nka), &
-            b2plus(sk,nkr,nkr,0:nka), b2minus(sk,nkr,nkr,0:nka), &
-            bb1plus(sk,nkr,nkr,0:nka), bb1minus(sk,nkr,nkr,0:nka), &
-            bb2plus(sk,nkr,nkr,0:nka), bb2minus(sk,nkr,nkr,0:nka), &
-            brne1(sk,nkr,0:nka),brne2(sk,nkr,0:nka), &
-            brnh1(sk,nkr,0:nka), &
-            brnh2(sk,nkr,0:nka), &
+  allocate(	ab(sk,nkr,0:nka), &
+            b1plus(sk,nkr,nkr,0:nka),			b1minus(sk,nkr,nkr,0:nka), &
+            b2plus(sk,nkr,nkr,0:nka), 		b2minus(sk,nkr,nkr,0:nka), &
+            bb1plus(sk,nkr,nkr,0:nka), 		bb1minus(sk,nkr,nkr,0:nka), &
+            bb2plus(sk,nkr,nkr,0:nka), 		bb2minus(sk,nkr,nkr,0:nka), &
+            brne1(sk,nkr,0:nka),					brne2(sk,nkr,0:nka), &
+            brnh1(sk,nkr,0:nka),					brnh2(sk,nkr,0:nka), &
             ddb1plusinv(sk,nkr,nkr,0:nka), &
             ddb1minusinv(sk,nkr,nkr,0:nka), &
             ddb2plusinv(sk,nkr,nkr,0:nka), &
             ddb2minusinv(sk,nkr,nkr,0:nka), &
-            dddb1inv(sk,nkr,nkr,0:nka), dddb2inv(sk,nkr,nkr,0:nka), &
+            dddb1inv(sk,nkr,nkr,0:nka),		dddb2inv(sk,nkr,nkr,0:nka), &
             fgammaplus(sk,nkr,nkr,0:nka), &
             fgammaminus(sk,nkr,nkr,0:nka), &
-            hie2inv(sk,nkr,nkr,0:nka),hih2inv(sk,nkr,nkr,0:nka), &
+            hie2inv(sk,nkr,nkr,0:nka),		hih2inv(sk,nkr,nkr,0:nka), &
             hipsisk(sk,nkr,0:nka), &
-            psie1(sk,nkr,nkr,0:nka), psie2(sk,nkr,nkr,0:nka), &
-            psih1(sk,nkr,nkr,0:nka), psih2(sk,nkr,nkr,0:nka), &
-            psie1inv(sk,nkr,nkr,0:nka),psie2inv(sk,nkr,nkr,0:nka), &
-            psih1inv(sk,nkr,nkr,0:nka),psih2inv(sk,nkr,nkr,0:nka), &
-            psipsi1inv(sk,nkr,nkr,0:nka), &
-            psipsi2inv(sk,nkr,nkr,0:nka), &
-            psibrn1(sk,nkr,0:nka),psibrn2(sk,nkr,0:nka), &
-            psihi1(sk,nkr,nkr,0:nka), psihi2(sk,nkr,nkr,0:nka), &
-            psihi3(sk,nkr,nkr,0:nka), psihi4(sk,nkr,nkr,0:nka), &
-            rab1(nkr,nkr), rab2(nkr,nkr), &
-            rnplus(sk,nkr,0:nka), rnminus(sk,nkr,0:nka), &
-            rnnplus(sk,nkr,0:nka), rnnminus(sk,nkr,0:nka), &
-            uste1(sk,nkr,nkr,0:nka), uste2(sk,nkr,nkr,0:nka), &
-            usth1(sk,nkr,nkr,0:nka), usth2(sk,nkr,nkr,0:nka), &
+            psie1(sk,nkr,nkr,0:nka), 			psie2(sk,nkr,nkr,0:nka), &
+            psih1(sk,nkr,nkr,0:nka), 			psih2(sk,nkr,nkr,0:nka), &
+            psie1inv(sk,nkr,nkr,0:nka),		psie2inv(sk,nkr,nkr,0:nka), &
+            psih1inv(sk,nkr,nkr,0:nka),		psih2inv(sk,nkr,nkr,0:nka), &
+            psipsi1inv(sk,nkr,nkr,0:nka), psipsi2inv(sk,nkr,nkr,0:nka), &
+            psibrn1(sk,nkr,0:nka),				psibrn2(sk,nkr,0:nka), &
+            psihi1(sk,nkr,nkr,0:nka), 		psihi2(sk,nkr,nkr,0:nka), &
+            psihi3(sk,nkr,nkr,0:nka), 		psihi4(sk,nkr,nkr,0:nka), &
+            rab1(nkr,nkr), 								rab2(nkr,nkr), &
+            rnplus(sk,nkr,0:nka), 				rnminus(sk,nkr,0:nka), &
+            rnnplus(sk,nkr,0:nka), 				rnnminus(sk,nkr,0:nka), &
+            uste1(sk,nkr,nkr,0:nka), 			uste2(sk,nkr,nkr,0:nka), &
+            usth1(sk,nkr,nkr,0:nka), 			usth2(sk,nkr,nkr,0:nka), &
             xrab(nkr), &
 
 !    это для прогонки
             alphap(sk,nkr,nkr),betap(sk+1,nkr), &
             rabp(nkr,nkr),rabpinv(nkr,nkr), &
-            xrabp(nkr), exit_sum(nkr, 0:nka))
+            xrabp(nkr), exit_sum(nkr, 0:nka), enter_sum(nkr, 0:nka))
 	allocate(temp(nkr,nkr), temp2(nkr,nkr))
   allocate(ipiv(nkr), ipiv2(nkr))
   continue
@@ -585,7 +542,9 @@ subroutine field_power(k,kluch1)
 
   integer inr,is,k,kluch1
 	real power,powerenter,powerexit,powersum,powerim,powerplus,powerminus, dva_d_na_lambda
+	real*8 my_power
 	powerexit = 0.0d0
+	powerenter = 0.0d0
 !	double complex xrab1(20)
   if (kluch1.eq.1) then
     do is=1,sk
@@ -602,21 +561,37 @@ subroutine field_power(k,kluch1)
     end do
   end if
   if (kluch1.eq.2) then
+		do is = 1, sk
+			my_power = 0.0d0
+			do inr = 1, nkr
+				do ina = 0, nka
+					exit_sum(inr, ina) = (xbplus(is,inr,ina)+xbminus(is,inr,ina))*zn(is,inr,ina)/abs(zn(is,inr,ina))
+				end do
+			end do
+			do ina = 0, nka
+				my_power = my_power + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(is,:,ina)-xbminus(is,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
+			end do
+			print *, is, my_power
+		end do
+
+
     do inr=1,nkr
       do ina=0,nka
         exit_sum(inr, ina) = (xbplus(sk,inr,ina)+xbminus(sk,inr,ina))*zn(sk,inr,ina)/abs(zn(sk,inr,ina))
-        xrabp(inr)= (xbplus(1,inr,ina)+xbminus(1,inr,ina))*zn(1,inr,ina)/abs(zn(1,inr,ina))
+        enter_sum(inr, ina)= (xbplus(1,inr,ina)+xbminus(1,inr,ina))*zn(1,inr,ina)/abs(zn(1,inr,ina))
       end do
 		end do
 		do ina = 0, nka
 			print *, "ina =", ina, xbplus(sk,:,ina)
+			print *, "ina =", ina, xbminus(sk,:,ina)
 			powerexit = powerexit + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(sk,:,ina)-xbminus(sk,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
+			powerenter = powerenter + 0.5d0*real(dot_product(enter_sum(:,ina),(xbplus(1,:,ina)-xbminus(1,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
 		end do
-		! print *, "beam_curr =", beam_curr, "beam_voltage", beam_voltage
-    powerenter=0.5d0*real(dot_product(xrabp(:),(xbplus(1,:,0)-xbminus(1,:,0))))/(beam_curr*beam_voltage*1000.0d0)
-    powersum= -( powerenter-powerexit) + sum
 		print *, "POWER_EXIT =", powerexit
-    ! print* ,'w0=',w0,'k',k,'power=',powerexit
+		print *, "POWER_ENTER =", powerenter
+		powersum= -(powerenter-powerexit)! + sum
+		print *, "POWER_SUM =", powersum
+		! print *, "beam_curr =", beam_curr, "beam_voltage", beam_voltage
     dva_d_na_lambda=periodz1*w0/(pi*3.0d0)
 
     write (21,922) dva_d_na_lambda,w0,beam_voltage,k,0,powerenter,powerexit,sum,powersum

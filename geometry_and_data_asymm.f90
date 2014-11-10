@@ -2,8 +2,6 @@ module geometry_and_data
 use array_work
 use com_prog
 implicit none
-
-integer*4 ialpha
 contains
 
 subroutine indat

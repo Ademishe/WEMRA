@@ -3,16 +3,16 @@ use array_work
 contains
 
 subroutine drkgs(prmt, ndim, ihlf)
-    implicit none
-    dimension a(4),b(4),c(4),prmt(5)
-    double precision prmt,a,b,c,x,xend,h,aj,bj,cj,r1,r2,delt,ttau0
+  implicit none
 
-    integer ndim,ihlf,i,irec,istep,iend,itest,j,imod,itemp
+  dimension a(4),b(4),c(4),prmt(5)
+  double precision prmt,a,b,c,x,xend,h,aj,bj,cj,r1,r2,delt,ttau0
+  integer ndim,ihlf,i,irec,istep,iend,itest,j,imod,itemp
 	ttau0=prmt(1)
 	itemp=1
 
-    do 1 i=1,ndim
-        aux(8,i)=.066666666666666667d0*dery(i)
+  do 1 i=1,ndim
+    aux(8,i)=.066666666666666667d0*dery(i)
 1   continue
 
     x=prmt(1)
@@ -23,7 +23,7 @@ subroutine drkgs(prmt, ndim, ihlf)
     call fct(x)
 
     if(h*(xend-x))38,37,2
-        2 a(1)=.5d0
+2       a(1)=.5d0
         a(2)=.29289321881345248d0
         a(3)=1.7071067811865475d0
         a(4)=.16666666666666667d0
