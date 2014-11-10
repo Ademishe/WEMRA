@@ -563,11 +563,7 @@ subroutine field_power(k,kluch1)
   if (kluch1.eq.2) then
 		do is = 1, sk
 			my_power = 0.0d0
-			do inr = 1, nkr
-				do ina = 0, nka
-					exit_sum(inr, ina) = (xbplus(is,inr,ina)+xbminus(is,inr,ina))*zn(is,inr,ina)/abs(zn(is,inr,ina))
-				end do
-			end do
+			exit_sum(:, :) = (xbplus(is,:,:)+xbminus(is,:,:))*zn(is,:,:)/abs(zn(is,:,:))
 			do ina = 0, nka
 				my_power = my_power + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(is,:,ina)-xbminus(is,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
 			end do
@@ -575,12 +571,8 @@ subroutine field_power(k,kluch1)
 		end do
 
 
-    do inr=1,nkr
-      do ina=0,nka
-        exit_sum(inr, ina) = (xbplus(sk,inr,ina)+xbminus(sk,inr,ina))*zn(sk,inr,ina)/abs(zn(sk,inr,ina))
-        enter_sum(inr, ina)= (xbplus(1,inr,ina)+xbminus(1,inr,ina))*zn(1,inr,ina)/abs(zn(1,inr,ina))
-      end do
-		end do
+    exit_sum(:, :) = (xbplus(sk,:,:)+xbminus(sk,:,:))*zn(sk,:,:)/abs(zn(sk,:,:))
+  	enter_sum(:, :)= (xbplus(1,:,:)+xbminus(1,:,:))*zn(1,:,:)/abs(zn(1,:,:))
 		do ina = 0, nka
 			print *, "ina =", ina, xbplus(sk,:,ina)
 			print *, "ina =", ina, xbminus(sk,:,ina)
