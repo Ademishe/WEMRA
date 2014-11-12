@@ -124,6 +124,7 @@ program nest_multy_mode_nes
 
   do iomega=1,iw
 		w0=wh0+(iomega-1)*dw
+		print *, iomega, w0
 !			beam_voltage = (1.0d0/sqrt(1-((dz1*sdop1+dz2*sdop2)*w0/betazd/3.0d0)**2)-1.0d0)*511.0d0
 		call indat            ! проведение вспомогательных расчетов geometry_and_data
 
@@ -188,7 +189,6 @@ subroutine manager (stepwrite,iw)
 ! main cycle
   tau=0.0d0
   istwr=0
-	print *, rt(:)
 	print *, "ktimemax=", ktimemax
   do k=1,ktimemax
 !     то такое istwr? - это счетчик шагов при итерировании, нужен для записи на диск
@@ -210,7 +210,7 @@ subroutine manager (stepwrite,iw)
     xnminus(:,:,:) = xbminus(:,:,:)
     dxnplus(:,:,:) = dxbplus(:,:,:)
     dxnminus(:,:,:) = dxbminus(:,:,:)
-		if (kluch_beam.eq.2 .and. k.eq.1) call beam_calc(tau)
+		! if (kluch_beam.eq.2 .and. k.eq.1) call beam_calc(tau)
   end do ! конец основного цикла
 
   if(kluch_beam.eq.0) then
@@ -222,9 +222,9 @@ subroutine manager (stepwrite,iw)
     call field_structure(ktimemax,1)
     call field_structure(ktimemax,2)
   end if
-  if (ktimemax.ge.128) then
-    call spektr(fffw,fffb,w0,wh)
-  end if
+  ! if (ktimemax.ge.128) then
+  !   call spektr(fffw,fffb,w0,wh)
+  ! end if
 
 903 format(1x,'k=',i5,2x,'im=',i5,2x,e12.5,2x,e12.5,2x,e12.5,2x,'mkk=',i6,2x,'mk0=',i5)
 
@@ -561,21 +561,21 @@ subroutine field_power(k,kluch1)
     end do
   end if
   if (kluch1.eq.2) then
-		do is = 1, sk
-			my_power = 0.0d0
-			exit_sum(:, :) = (xbplus(is,:,:)+xbminus(is,:,:))*zn(is,:,:)/abs(zn(is,:,:))
-			do ina = 0, nka
-				my_power = my_power + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(is,:,ina)-xbminus(is,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
-			end do
-			print *, is, my_power
-		end do
+		! do is = 1, sk
+		! 	my_power = 0.0d0
+		! 	exit_sum(:, :) = (xbplus(is,:,:)+xbminus(is,:,:))*zn(is,:,:)/abs(zn(is,:,:))
+		! 	do ina = 0, nka
+		! 		my_power = my_power + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(is,:,ina)-xbminus(is,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
+		! 	end do
+		! 	print *, is, my_power
+		! end do
 
 
     exit_sum(:, :) = (xbplus(sk,:,:)+xbminus(sk,:,:))*zn(sk,:,:)/abs(zn(sk,:,:))
   	enter_sum(:, :)= (xbplus(1,:,:)+xbminus(1,:,:))*zn(1,:,:)/abs(zn(1,:,:))
 		do ina = 0, nka
-			print *, "ina =", ina, xbplus(sk,:,ina)
-			print *, "ina =", ina, xbminus(sk,:,ina)
+			! print *, "ina =", ina, xbplus(sk,:,ina)
+			! print *, "ina =", ina, xbminus(sk,:,ina)
 			powerexit = powerexit + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(sk,:,ina)-xbminus(sk,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
 			powerenter = powerenter + 0.5d0*real(dot_product(enter_sum(:,ina),(xbplus(1,:,ina)-xbminus(1,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
 		end do

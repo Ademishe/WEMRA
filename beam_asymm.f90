@@ -6,26 +6,28 @@ implicit none
 contains
 
 subroutine beam_begin
-  integer i
-  mkns=mkk(inbeam)*2
-  ddz=zs(1)/mk0
+  integer i, ibeam
+  do ibeam = 1, nbeam
+    mkns=mkk(ibeam)*2
+    ddz=zs(1)/mk0
 
-  do i=1,mkk(inbeam)
-    yarray0(2*i,inbeam)=ddz*(i-1)+ampl_mod*sin(2.0d0*pi*(i-1)/mk0)
-    yarray0(2*i-1,inbeam)=rel_factor*v0
-    dery(2*i)=v0/w0
-    dery(2*i-1)=0.0d0
-    velocity(i)=v0
-    yarray(2*i-1)=yarray0(2*i-1,inbeam)
-    yarray(2*i)=yarray0(2*i,inbeam)
-  end do
+    do i=1,mkk(ibeam)
+      yarray0(2*i,ibeam)=ddz*(i-1)+ampl_mod*sin(2.0d0*pi*(i-1)/mk0)
+      yarray0(2*i-1,ibeam)=rel_factor*v0
+      dery(2*i)=v0/w0
+      dery(2*i-1)=0.0d0
+      velocity(i)=v0
+      yarray(2*i-1)=yarray0(2*i-1,ibeam)
+      yarray(2*i)=yarray0(2*i,ibeam)
+    end do
+  end do ! ibeam
   return
 end subroutine
 
 
 subroutine beam_calc(tau)
   real*8 tau
-	integer imm, k12, i, mk, mkk1, is,inr, ina
+	integer imm, k12, i, mk, mkk1, is,inr, ina, inbeam
   double precision sum0,prmt(5)
   do i=1,2*mkk(inbeam)
     yarray=yarray0(:,inbeam)
@@ -111,9 +113,9 @@ end module beam_nes
 subroutine fct(ttau)
 !               вычисление правой части в уравнениях движения
 !               вызывается из drkgs
-      use array_work
+  use array_work
 	real*8 ttau
-      double precision  deltaz
+  double precision  deltaz
       integer is, im, inr
 
       do im=1,mkk(inbeam)

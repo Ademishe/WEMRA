@@ -13,6 +13,7 @@ subroutine indat
     else
         call geom2
     end if
+    ! print *, rt(:)
     call parameters1
     call gazel1
     call eid
@@ -93,12 +94,11 @@ end subroutine
 subroutine eid
   integer inr,is,ina,inbm
   do is=1,sk
-    do ina=0,nka
-      do  inr=1,nkr
-        do  inbm=1,nbeam
-          eznbm(is,inr,ina,inbm)= ce*sqrt(abs(zn(is,inr,ina))/pi)* &
-            (mu(inr,ina)/(abs(gam(is,inr,ina))*(rt(is)**2)))* &
-            bessel_jn(0, mu(inr,ina)*rb(inbm)/rt(is))/bessel_jn(1, mu(inr,ina))
+    do ina = 0, nka
+      do inr = 1, nkr
+        do inbm = 1, nbeam
+          eznbm(is,inr,ina,inbm) = ce*sqrt(abs(zn(is,inr,ina))/pi)*(mu(inr,ina)/(abs(gam(is,inr,ina))*(rt(is)**2)))* &
+                                  bessel_jn(0, mu(inr,ina)*rb(inbm)/rt(is))/bessel_jn(1, mu(inr,ina))
         end do
       end do
     end do
@@ -115,20 +115,20 @@ subroutine geom1
 ! ***********************задание геометрии системы **********************
 !           геометрия отражателя
 
-	  do iss=1,sdop01                  ! участок гладкого волновода
-	   dz(iss)                                = dz01
-	   rt(iss)                                = rt01
-        end do
+  do iss=1,sdop01                  ! участок гладкого волновода
+    dz(iss)                                = dz01
+    rt(iss)                                = rt01
+  end do
 
-	  do iss=1,sdop02                       ! неоднородность
-	   dz(sdop01+iss)                          = dz02
-         rt(sdop01+iss)                          = rt02
-        end do
-	 do iss=1,sdop03                       ! неоднородность
-	   dz(sdop01+sdop02+iss)                   = dz03
-         rt(sdop01+sdop02+iss)                   = rt03
-        end do
-         sk00=sdop01+sdop02+sdop03
+  do iss=1,sdop02                       ! неоднородность
+    dz(sdop01+iss)                          = dz02
+    rt(sdop01+iss)                          = rt02
+  end do
+	do iss=1,sdop03                       ! неоднородность
+    dz(sdop01+sdop02+iss)                   = dz03
+    rt(sdop01+sdop02+iss)                   = rt03
+  end do
+  sk00=sdop01+sdop02+sdop03
 
 !         геометрия секции
 
