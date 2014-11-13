@@ -57,7 +57,7 @@ module array_work
         dery(:),aux(:,:),velocity(:),velocity1(:)
 
     complex*16,allocatable::gam(:,:,:),zn(:,:,:),eznbm(:,:,:,:), &
-        ernbm(:,:,:,:),xnplus(:,:,:),xnminus(:,:,:), &
+        xnplus(:,:,:),xnminus(:,:,:), &
         dxnplus(:,:,:),dxnminus(:,:,:),xbplus(:,:,:), &
         xbminus(:,:,:),dxbplus(:,:,:),dxbminus(:,:,:), &
         bplus0(:,:),bminussk(:,:), &

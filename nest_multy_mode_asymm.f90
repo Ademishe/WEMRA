@@ -185,7 +185,7 @@ subroutine manager (stepwrite,iw)
   xnminus(sk,:,:) =		bminussk
   xbminus(sk,:,:) =		bminussk
 
-	! call beam_begin
+	call beam_begin
 ! main cycle
   tau=0.0d0
   istwr=0
@@ -210,7 +210,7 @@ subroutine manager (stepwrite,iw)
     xnminus(:,:,:) = xbminus(:,:,:)
     dxnplus(:,:,:) = dxbplus(:,:,:)
     dxnminus(:,:,:) = dxbminus(:,:,:)
-		! if (kluch_beam.eq.2 .and. k.eq.1) call beam_calc(tau)
+		if (kluch_beam.eq.2 .and. k.eq.1) call beam_calc(tau)
   end do ! конец основного цикла
 
   if(kluch_beam.eq.0) then
@@ -300,7 +300,7 @@ subroutine configarr
   allocate(zs(sk+2),dz(sk),rt(sk),mu(50,0:10),rb(nbeam), &
 					alpha(nbeam),mkk(nbeam))
   allocate(	gam(sk,nkr,0:nka),					zn(sk,nkr,0:nka), &
-						eznbm(sk,nkr,0:nka,nbeam),	ernbm(sk,nkr,0:nka,nbeam), &
+						eznbm(sk,nkr,0:nka,nbeam), &
           	xnplus(sk,nkr,0:nka),				xnminus(sk,nkr,0:nka), &
           	dxnplus(sk,nkr,0:nka),			dxnminus(sk,nkr,0:nka), &
           	xbplus(sk,nkr,0:nka),				xbminus(sk,nkr,0:nka), &
@@ -323,7 +323,6 @@ subroutine init_main_arrays
 	gam(:,:,:)					= (0.0d0, 0.0d0)
 	zn(:,:,:)						= (0.0d0, 0.0d0)
 	eznbm(:,:,:,:)			= (0.0d0, 0.0d0)
-	ernbm(:,:,:,:)			= (0.0d0, 0.0d0)
 	xnplus(:,:,:)				= (0.0d0, 0.0d0)
 	xnminus(:,:,:)			= (0.0d0, 0.0d0)
 	dxnplus(:,:,:)			= (0.0d0, 0.0d0)
@@ -600,7 +599,7 @@ subroutine freeallmem
 
 	deallocate(temp, temp2)
 	deallocate(ipiv, ipiv2)
-	deallocate(gam,zn,eznbm,ernbm, &
+	deallocate(gam,zn,eznbm, &
 							xnplus,xnminus, &
 							dxnplus,dxnminus, &
 							xbplus,xbminus, &
