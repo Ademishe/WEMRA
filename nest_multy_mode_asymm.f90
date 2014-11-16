@@ -63,7 +63,7 @@ program nest_multy_mode_nes
     read (3,1000)                             string
     read (3,*)    ampl_enter,ampl_exit
     read (3,1000)                             string
-    read (3,*)    beam_curr,beam_voltage,rb0,nbeam, mk0
+    read (3,*)    beam_curr,beam_voltage,rb0,mk0,nbeam,ellips
     read (3,1000)                             string
     read (3,*)    ampl_mod, step_prmt, prmt_4
 
@@ -204,8 +204,6 @@ subroutine manager (stepwrite,iw)
       fffw(i11)=xbplus(sk,1,0)
       fffb(i11)=xbminus(1,1,0)
     end if
-    etaplus = (0.0d0,0.0d0)
-    etaminus= (0.0d0,0.0d0)
 		xnplus(:,:,:) = xbplus(:,:,:)
     xnminus(:,:,:) = xbminus(:,:,:)
     dxnplus(:,:,:) = dxbplus(:,:,:)
@@ -297,10 +295,9 @@ end
 
 subroutine configarr
 	use array_work
-  allocate(zs(sk+2),dz(sk),rt(sk),mu(50,0:10),rb(nbeam), &
-					alpha(nbeam),mkk(nbeam))
+  allocate(zs(sk+2),dz(sk),rt(sk),mu(50,0:10),rb(nbeam),alpha(nbeam))
   allocate(	gam(sk,nkr,0:nka),					zn(sk,nkr,0:nka), &
-						eznbm(sk,nkr,0:nka,nbeam), &
+						eznbm(sk,nkr,0:nka,nbeam), 	ernbm(sk,nkr,0:nka,nbeam), ephinbm(sk,nkr,0:nka,nbeam), &
           	xnplus(sk,nkr,0:nka),				xnminus(sk,nkr,0:nka), &
           	dxnplus(sk,nkr,0:nka),			dxnminus(sk,nkr,0:nka), &
           	xbplus(sk,nkr,0:nka),				xbminus(sk,nkr,0:nka), &
@@ -319,10 +316,11 @@ subroutine init_main_arrays
 	mu(:,:)							= 0.0d0
 	rb(:)								= 0.0d0
 	alpha(:)						= 0.0d0
-	mkk(:)							= 0
 	gam(:,:,:)					= (0.0d0, 0.0d0)
 	zn(:,:,:)						= (0.0d0, 0.0d0)
 	eznbm(:,:,:,:)			= (0.0d0, 0.0d0)
+	ephinbm(:,:,:,:)		= (0.0d0, 0.0d0)
+	ernbm(:,:,:,:)			= (0.0d0, 0.0d0)
 	xnplus(:,:,:)				= (0.0d0, 0.0d0)
 	xnminus(:,:,:)			= (0.0d0, 0.0d0)
 	dxnplus(:,:,:)			= (0.0d0, 0.0d0)
@@ -343,20 +341,13 @@ end subroutine init_main_arrays
 subroutine config_beam
 !     распределение памяти для массивов,
 !      используемых при интегрировании уравнений движения
-    use array_work
-    integer err2,dimyarray1,dimaux1,dimyarray2,dimyarray0
-
-    dimyarray1=2*mkk(1)*nbeam+800   !+ns4+100
-    dimyarray2=mkk(1)*nbeam+400
-    dimyarray0=2*mkk(1)+200
-    dimaux1=8
-
-    allocate(yarray(dimyarray1),yarray1(dimyarray1), &
-				yarray0(dimyarray0,nbeam), &
-        dery(dimyarray1), &
-        aux(dimaux1,dimyarray1), &
-        velocity(dimyarray2), velocity1(dimyarray2))
-    return
+	use array_work
+  integer err2,dimyarray1,dimaux1,dimyarray
+  dimyarray=2*mkk+800
+  dimaux1=8
+  allocate(yarray(dimyarray), yarray1(dimyarray), dery(dimyarray), aux(dimaux1,dimyarray), velocity(mkk+400, nbeam), velocity1(mkk+400), &
+						all_yarray(dimyarray,nbeam), all_dery(dimyarray,nbeam), stat=err2)
+  return
 end subroutine
 
 
@@ -499,7 +490,6 @@ subroutine field_structure (k,kluch2)
 
   if (kluch2.eq.2) then
 !      выдача продольного распределения ez
-
   	do is=1,sk
       ezbeam =0.0d0
       ezaxis =0.0d0
@@ -541,7 +531,6 @@ subroutine field_power(k,kluch1)
 
   integer inr,is,k,kluch1
 	real power,powerenter,powerexit,powersum,powerim,powerplus,powerminus, dva_d_na_lambda
-	real*8 my_power
 	powerexit = 0.0d0
 	powerenter = 0.0d0
 !	double complex xrab1(20)
@@ -560,26 +549,15 @@ subroutine field_power(k,kluch1)
     end do
   end if
   if (kluch1.eq.2) then
-		! do is = 1, sk
-		! 	my_power = 0.0d0
-		! 	exit_sum(:, :) = (xbplus(is,:,:)+xbminus(is,:,:))*zn(is,:,:)/abs(zn(is,:,:))
-		! 	do ina = 0, nka
-		! 		my_power = my_power + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(is,:,ina)-xbminus(is,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
-		! 	end do
-		! 	print *, is, my_power
-		! end do
-
-
     exit_sum(:, :) = (xbplus(sk,:,:)+xbminus(sk,:,:))*zn(sk,:,:)/abs(zn(sk,:,:))
   	enter_sum(:, :)= (xbplus(1,:,:)+xbminus(1,:,:))*zn(1,:,:)/abs(zn(1,:,:))
 		do ina = 0, nka
-			! print *, "ina =", ina, xbplus(sk,:,ina)
-			! print *, "ina =", ina, xbminus(sk,:,ina)
+			print *, "ina =", ina, xbplus(sk,:,ina)
+			print *, "ina =", ina, xbminus(sk,:,ina)
 			powerexit = powerexit + 0.5d0*real(dot_product(exit_sum(:, ina),(xbplus(sk,:,ina)-xbminus(sk,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
 			powerenter = powerenter + 0.5d0*real(dot_product(enter_sum(:,ina),(xbplus(1,:,ina)-xbminus(1,:,ina))))/(beam_curr*beam_voltage*1000.0d0)
 		end do
 		print *, "POWER_EXIT =", powerexit
-		print *, "POWER_ENTER =", powerenter
 		powersum= -(powerenter-powerexit)! + sum
 		print *, "POWER_SUM =", powersum
 		! print *, "beam_curr =", beam_curr, "beam_voltage", beam_voltage
@@ -599,7 +577,7 @@ subroutine freeallmem
 
 	deallocate(temp, temp2)
 	deallocate(ipiv, ipiv2)
-	deallocate(gam,zn,eznbm, &
+	deallocate(gam, zn, eznbm, ernbm, ephinbm, &
 							xnplus,xnminus, &
 							dxnplus,dxnminus, &
 							xbplus,xbminus, &
@@ -608,40 +586,37 @@ subroutine freeallmem
 							etaplus,etaminus, &
 							amplxplus,amplxminus)
 	deallocate(alpha, &
-							yarray0,yarray,yarray1, &
-							dery,aux, &
-							velocity, velocity1)
+							yarray,yarray1, &
+							dery, aux, &
+							velocity, velocity1, &
+							all_yarray, all_dery)
 	deallocate(aa1, aa2,aa3, &
 							alfaplus, alfaminus, &
 							betaplus, betaminus, &
 							ab, &
-				b1plus, b1minus, &
-				b2plus, b2minus, &
-				bb1plus, bb1minus, &
-				bb2plus, bb2minus, &
-				brne1,brne2,brnh1,brnh2, &
-				ddb1plusinv, ddb1minusinv, &
-				ddb2plusinv, ddb2minusinv, &
-				dddb1inv, dddb2inv, &
-				fgammaplus, fgammaminus, &
-				hie2inv,hih2inv, &
-				hipsisk, &
-				psie1, psie2, &
-				psih1, psih2, &
-				psie1inv,psie2inv, &
-				psih1inv,psih2inv, &
-				psipsi1inv, psipsi2inv, &
-				psibrn1,psibrn2, &
-				psihi1, psihi2, &
-				psihi3, psihi4, &
-				rab1, rab2, &
-				rnplus, rnminus,  &
-				rnnplus, rnnminus, &
-				uste1, uste2, &
-				usth1, usth2, &
-				xrab, &
-				alphap,betap, &
-				rabp,rabpinv,xrabp)
+							b1plus, b1minus, b2plus, b2minus, &
+							bb1plus, bb1minus, bb2plus, bb2minus, &
+							brne1,brne2,brnh1,brnh2, &
+							ddb1plusinv, ddb1minusinv, &
+							ddb2plusinv, ddb2minusinv, &
+							dddb1inv, dddb2inv, &
+							fgammaplus, fgammaminus, &
+							hie2inv,hih2inv, &
+							hipsisk, &
+							psie1, psie2, psih1, psih2, &
+							psie1inv,psie2inv, &
+							psih1inv,psih2inv, &
+							psipsi1inv, psipsi2inv, &
+							psibrn1,psibrn2, &
+							psihi1, psihi2, &
+							psihi3, psihi4, &
+							rab1, rab2, &
+							rnplus, rnminus,  &
+							rnnplus, rnnminus, &
+							uste1, uste2, usth1, usth2, &
+							xrab, &
+							alphap,betap, &
+							rabp,rabpinv,xrabp)
 !	deallocate(bm1,bm2,b1m1)
 	deallocate(d1plus,d1minus, &
 			d2plus,d2minus, &

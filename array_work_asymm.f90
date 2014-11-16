@@ -27,8 +27,8 @@ module array_work
     integer sk,ss00,sk1,sk2,sk3,sdop01,sdop02,sdop03, &
             sdop11,sdop12,sdop21,sdop22,sdop31,sdop32,mk0,ns2,ns4, &
             mkns,ktimemax, kluch_beam, kluch_structur(3),nka,nkr, &
-            nbeam
-    real*8  dt,rb0
+            nbeam, mkk
+    real*8  dt,rb0, ellips
     real*8  w0,rel_factor,constq, const1, ddz,v0, &
             rt01,rt02,rt03,dz01,dz02,dz03, &
             rt1,rt2,dz11,dz12,dz21,dz22,dz31,dz32,zss, &
@@ -49,14 +49,12 @@ module array_work
 !    dz(:)-  длины регулярных участков (участков гладкого волновода)
 !    rt(:)-   радиусы регулярных участков волновода
 !    mu(:,:),nu(:) -  корни функций бесселя
-    integer, allocatable:: mkk(:)
 
-    real*8, allocatable:: &
-        zs(:),dz(:),rt(:),rb(:), mu(:,:),alpha(:), &
-        yarray0(:,:),yarray(:),yarray1(:), &
-        dery(:),aux(:,:),velocity(:),velocity1(:)
+    real*8, allocatable:: zs(:),dz(:),rt(:),rb(:), mu(:,:),alpha(:), &
+        yarray(:),yarray1(:),velocity1(:), &
+        dery(:), aux(:,:), velocity(:,:), all_yarray(:,:), all_dery(:,:)
 
-    complex*16,allocatable::gam(:,:,:),zn(:,:,:),eznbm(:,:,:,:), &
+    complex*16,allocatable::gam(:,:,:),zn(:,:,:),eznbm(:,:,:,:), ernbm(:,:,:,:), ephinbm(:,:,:,:), &
         xnplus(:,:,:),xnminus(:,:,:), &
         dxnplus(:,:,:),dxnminus(:,:,:),xbplus(:,:,:), &
         xbminus(:,:,:),dxbplus(:,:,:),dxbminus(:,:,:), &

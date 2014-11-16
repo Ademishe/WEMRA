@@ -2,12 +2,12 @@ module com_prog
 use array_work
 contains
 
-subroutine drkgs(prmt, ndim, ihlf)
+subroutine drkgs(prmt, ndim, ihlf, ibeam)
   implicit none
-
   dimension a(4),b(4),c(4),prmt(5)
   double precision prmt,a,b,c,x,xend,h,aj,bj,cj,r1,r2,delt,ttau0
-  integer ndim,ihlf,i,irec,istep,iend,itest,j,imod,itemp
+
+  integer ndim,ihlf,i,irec,istep,iend,itest,j,imod,itemp,ibeam
 	ttau0=prmt(1)
 	itemp=1
 
@@ -20,28 +20,28 @@ subroutine drkgs(prmt, ndim, ihlf)
     h=prmt(3)
     prmt(5)=0.d0
 
-    call fct(x)
+    call fct(x,ibeam)
 
-    if(h*(xend-x))38,37,2
-2       a(1)=.5d0
-        a(2)=.29289321881345248d0
-        a(3)=1.7071067811865475d0
-        a(4)=.16666666666666667d0
-        b(1)=2.d0
-        b(2)=1.d0
-        b(3)=1.d0
-        b(4)=2.d0
-        c(1)=.5d0
-        c(2)=.29289321881345248d0
-        c(3)=1.7071067811865475d0
-        c(4)=.5d0
+    if(h*(xend-x)) 38,37,2
+2   a(1)=.5d0
+    a(2)=.29289321881345248d0
+    a(3)=1.7071067811865475d0
+    a(4)=.16666666666666667d0
+    b(1)=2.d0
+    b(2)=1.d0
+    b(3)=1.d0
+    b(4)=2.d0
+    c(1)=.5d0
+    c(2)=.29289321881345248d0
+    c(3)=1.7071067811865475d0
+    c(4)=.5d0
 
-        do 3 i=1,ndim
-            aux(1,i)=yarray(i)
-            aux(2,i)=dery(i)
-            aux(3,i)=0.d0
-            aux(6,i)=0.d0
-3       continue
+    do 3 i=1,ndim
+      aux(1,i)=yarray(i)
+      aux(2,i)=dery(i)
+      aux(3,i)=0.d0
+      aux(6,i)=0.d0
+3     continue
       irec=0
       h=h+h
       ihlf=-1
@@ -50,7 +50,7 @@ subroutine drkgs(prmt, ndim, ihlf)
     4 if((x+h-xend)*h)7,6,5
     5 h=xend-x
     6 iend=1
-    7 call outp(x,irec,ndim,prmt,ttau0,itemp,1)
+    7 call outp(x,irec,ndim,prmt,ttau0,itemp,1,ibeam)
       if(prmt(5))40,8,40
     8 itest=0
     9 istep=istep+1
@@ -69,7 +69,7 @@ subroutine drkgs(prmt, ndim, ihlf)
    12 j=j+1
       if(j-3)13,14,13
    13 x=x+.5d0*h
-   14 call fct(x)
+   14 call fct(x,ibeam)
       goto 10
    15 if(itest)16,16,20
    16 do 17 i=1,ndim
@@ -88,7 +88,7 @@ subroutine drkgs(prmt, ndim, ihlf)
       goto 9
    20 imod=istep/2
       if(istep-imod-imod)21,23,21
-   21 call fct(x)
+   21 call fct(x,ibeam)
       do 22 i=1,ndim
       aux(5,i)=yarray(i)
       aux(7,i)=dery(i)
@@ -107,7 +107,7 @@ subroutine drkgs(prmt, ndim, ihlf)
       x=x-h
       iend=0
       goto 18
-   28 call fct(x)
+   28 call fct(x,ibeam)
       do 29 i=1,ndim
       aux(1,i)=yarray(i)
       aux(2,i)=dery(i)
@@ -115,7 +115,7 @@ subroutine drkgs(prmt, ndim, ihlf)
       yarray(i)=aux(5,i)
       dery(i)=aux(7,i)
    29 continue
-      call outp(x-h,ihlf,ndim,prmt,ttau0,itemp,2)
+      call outp(x-h,ihlf,ndim,prmt,ttau0,itemp,2, ibeam)
       if(prmt(5))40,30,40
    30 do 31 i=1,ndim
       yarray(i)=aux(1,i)
@@ -135,13 +135,32 @@ subroutine drkgs(prmt, ndim, ihlf)
       h=h+h
       goto 4
    36 ihlf=11
-      call fct(x)
+      call fct(x,ibeam)
       goto 39
    37 ihlf=12
       goto 39
    38 ihlf=13
-   39 call outp(x,ihlf,ndim,prmt,ttau0,itemp,3)
+   39 call outp(x,ihlf,ndim,prmt,ttau0,itemp,3, ibeam)
    40 return
 end subroutine
+
+
+real function integrate(func, a, b, eps)
+  implicit none
+  real*8 :: a, b, eps
+  real*8, external :: func
+  real*8 :: curr, prev
+  integrate = 0.0d0
+  prev = a
+  curr = a + eps
+  do while (curr < b)
+    integrate = integrate + (curr - prev) * 0.5d0 * &
+    (func((prev+curr)*0.5d0 - (curr-prev)*0.2886751345948129d0) + &
+    func((prev+curr)*0.5d0 + (curr-prev)*0.2886751345948129d0))
+    prev = curr
+    curr = curr + eps
+  end do
+  return
+end function integrate
 
 end module com_prog

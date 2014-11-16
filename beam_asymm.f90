@@ -7,230 +7,167 @@ contains
 
 subroutine beam_begin
   integer i, ibeam
-  do ibeam = 1, nbeam
-    mkns=mkk(ibeam)*2
-    ddz=zs(1)/mk0
 
-    do i=1,mkk(ibeam)
-      yarray0(2*i,ibeam)=ddz*(i-1)+ampl_mod*sin(2.0d0*pi*(i-1)/mk0)
-      yarray0(2*i-1,ibeam)=rel_factor*v0
-      dery(2*i)=v0/w0
-      dery(2*i-1)=0.0d0
-      velocity(i)=v0
-      yarray(2*i-1)=yarray0(2*i-1,ibeam)
-      yarray(2*i)=yarray0(2*i,ibeam)
+  mkns = mkk*2
+  ddz = zs(1)/mk0
+  do i = 1, mkk
+    do ibeam = 1, nbeam
+      all_yarray(2*i, ibeam) = ddz*(i-1)+ampl_mod*sin(2.0d0*pi*(i-1)/mk0)
+      all_yarray(2*i-1, ibeam) = rel_factor*v0
+      all_dery(2*i, ibeam) = v0/w0
+      all_dery(2*i-1, ibeam) = 0.0d0
+      velocity(i, ibeam) = v0
     end do
-  end do ! ibeam
+  end do
+
   return
 end subroutine
 
 
-subroutine beam_calc(tau)
-  real*8 tau
-	integer imm, k12, i, mk, mkk1, is,inr, ina, inbeam
+subroutine beam_calc (tau)
+	real*8 tau
+	integer imm, k12, i, mk, mkk1, is, in, ina, ibeam
   double precision sum0,prmt(5)
-  do i=1,2*mkk(inbeam)
-    yarray=yarray0(:,inbeam)
-  end do
+  do ibeam = 1, nbeam
+    yarray(:) = all_yarray(:, ibeam)
+    dery(:) = all_dery(:, ibeam)
+    prmt(1)=tau
+    prmt(2)=tau+dt
+    prmt(3)=step_prmt*dt
+    prmt(4)=prmt_4
+    prmt(5)=0.0d0
+    imm=0
+    call drkgs(prmt, mkns, imm, ibeam)
+	  print *, 'imm=', imm
+	  sum=0.0d0
+    k12=mk0
+    mk=0
+    do i=1,mkk
+      if(velocity(i, ibeam).ge.3.0d0) then
+        print *,'error, particle velocity > c, k =',k12
+      end if
+      if(yarray(2*i).ge.zss .or. yarray(2*i-1).lt.0.3d0 ) then
+        sum=sum+(1.0d0/sqrt(1-(velocity(i, ibeam)/3.0d0)**2)-1.0d0)
+        mk=mk+1
+      else
+        k12=k12+1
+        yarray1(2*k12)  = yarray(2*i)
+        yarray1(2*k12-1)= yarray(2*i-1)
+        velocity1(k12)  = velocity(i, ibeam)
+      end if
+    end do
 
-  prmt(1)=tau
-  prmt(2)=tau+dt
-  prmt(3)=step_prmt*dt
-  prmt(4)=prmt_4
-  prmt(5)=0.0d0
-  imm=0
-  call drkgs(prmt,mkns,imm)
-!           do i=1,mkk
-!	    velocity(i)=yarray(2*i-1)/sqrt((yarray(2*i-1)/3.0d0)**2+1)
-!	        yarray(2*i)=yarray(2*i)+velocity(i)*dt/w0
-!           end do
+    sum=(sum-mk0*(rel_factor-1.0d0))/(mk0*(rel_factor-1.0d0))
+    k12=mk0
+    mkk1=mkk-mk+mk0
+    mkk=mkk1
+    mkns=2*mkk
 
-  print *, 'imm=', imm
-  sum=0.0d0    ! энергия, приобретенная вылетевшими частицами
-  k12=mk0
-  mk=0         !счетчик вылетающих частиц
+    do i=1,mk0
+      yarray1(2*i)=ddz*(i-1)+ampl_mod*sin(2.0d0*pi*(i-1)/mk0)
+      yarray1(2*i-1)=rel_factor*v0
+      dery(2*i)=v0/w0
+      dery(2*i-1)=0.0d0
+	    velocity1(i)=v0
+    end do
 
-  do i=1,mkk(inbeam)
-! **************** сортировка частиц **************************
-    if(velocity(i).ge.3.0d0) then
-      print *,'error, particle velocity > c, k =',k12
-    end if
-    if(yarray(2*i).ge. zss .or. yarray(2*i-1).lt.0.3d0 ) then
-      sum=sum+(1.0d0/sqrt(1-(velocity(i)/3.0d0)**2)-1.0d0)
-      mk=mk+1
-!                              эти частицы выходят из рассмотрения
-    else
-      k12=k12+1
-      yarray1(2*k12)  = yarray(2*i)
-      yarray1(2*k12-1)= yarray(2*i-1)
-      velocity1(k12)  = velocity(i)
-!          присвоение оставшимся частицам новых номеров
-    end if
-!****************конец сортировки*****************************
-  end do
-  sum=(sum-mk0*(rel_factor-1.0d0))/(mk0*(rel_factor-1.0d0))
-  k12=mk0
-  mkk1=mkk(inbeam)-mk+mk0
-  mkk(inbeam)=mkk1
-  mkns=2*mkk(inbeam)
+    do i=1,mkk
+      velocity(i, ibeam)=velocity1(i)
+	  end do
 
-  do i=1,mk0
-    yarray1(2*i)=ddz*(i-1)+ampl_mod*sin(2.0d0*pi*(i-1)/mk0)
-	  yarray1(2*i-1)=rel_factor*v0
-    dery(2*i)=v0/w0
-    dery(2*i-1)=0.0d0
-	  velocity1(i)=v0
-  end do
+    do i=1,mkns
+      yarray(i)=yarray1(i)
+    end do
+    all_dery(:, ibeam) = dery(:)
+    all_yarray(:, ibeam) = yarray(:)
+  end do ! end do ina
 
-  do i=1,mkk(inbeam)
-    velocity(i)=velocity1(i)
-  end do
-
-  do  i=1,mkns
-    yarray(i)=yarray1(i)
-  end do
-
-  yarray0(:,inbeam)=yarray(:)
-
-  if (kluch_beam.eq.2) then
-    do is=1,sk
-      do inr=1,nkr
-        do ina=0,nka
-          write (22,901) is,inr,abs(etaplus(is,inr,ina)),abs(etaminus(is,inr,ina)),mk0,mkk(inbeam)
-	      end do
+  if (kluch_beam.eq.2 .or. kluch_beam.eq.3) then
+    open(unit = 22,file='eta.dat', access = 'APPEND')
+  	do is = 1, sk
+      do in = 1, nkr
+        do ina = 0, nka
+          write (22,901) is,in,abs(etaplus(is,in,ina)),abs(etaminus(is,in,ina)),mk0,mkk
+        end do
       end do
     end do
+    close(22)
   end if
-  print *,mkk(inbeam),mk0,mk,'  sum=',sum
+  print *,mkk,mk0,mk,'  sum=',sum
+
 901 format(1x,'is=',i5,2x,'in=',i4,2x,'etaplus=',e12.5,2x,'etaminus=',e12.5,2x,'mk0=',i6,2x,'mkk=',i5)
   return
-end subroutine beam_calc
-
+end subroutine
 
 end module beam_nes
 
 
-subroutine fct(ttau)
-!               вычисление правой части в уравнениях движения
-!               вызывается из drkgs
-  use array_work
+subroutine fct(ttau, ibeam)
+	use array_work
 	real*8 ttau
   double precision  deltaz
-      integer is, im, inr
-
-      do im=1,mkk(inbeam)
-        is=0
-    3   is=is+1
-      if((zs(is)-yarray(2*im))) 3,3,4       ! на каком рег. участке нах.частица
-
-    4  continue
-
+  integer is, im, in, ina, ibeam
 !
- !     do while (zs(is)-yarray(2*im).lt.0.0d0)
+!   do im=1,mkk
+!     is=0
+! 3   is=is+1
+!     if((zs(is) - yarray(2*im))) 3,3,4
+! 4   continue
 !
-!	   is=is+1
+!     if (is.eq.1 .or. is.eq.sk+2) then
+!       dery(2*im-1)=0.0d0
+!       dery(2*im)=velocity(im,ibeam)/w0
+!     else
+!       dery(2*im-1)=0.0d0
+!       deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
+!       do in = 1, nkr
+!         do ina = 0, nka
+!           dery(2*im-1) = dery(2*im-1) + const1*dreal(eznbm(is-1, in, ina, ibeam) * &
+!             ((xnplus(is-1,in,ina)+dxnplus(is-1,in,ina)*deltaz)* &
+!             exp(ce*(ttau-gam(is-1,in,ina)*deltaz))-(xnminus(is-1,in,ina) + &
+! 		        dxnminus(is-1,in,ina)*deltaz)*exp(ce*(ttau+gam(is-1,in,ina)*deltaz))))
 !
-
-      if (is.eq.1.or.is.eq.sk+2) then
-      dery(2*im-1)=0.0d0
-      dery(2*im)=velocity(im)/w0
-	 else
-      dery(2*im-1)=0.0d0
-      deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
-!               deltaz - текущая координата в локальной системе координат
-
-         do inr=1,nkr
-         do ina=0,nka
-
-!                        уравнения движения
-    dery(2*im-1)=dery(2*im-1)+const1*dreal(eznbm(is-1,inr,ina,inbeam)*(cos(ina*alpha(inbeam))* &
-        ((xnplus(is-1,inr,ina)+dxnplus(is-1,inr,ina)*deltaz)*exp(ce*(ttau-gam(is-1,inr,ina)*deltaz))- &
-        (xnminus(is-1,inr,ina)+dxnminus(is-1,inr,ina)*deltaz)*exp(ce*(ttau+gam(is-1,inr,ina)*deltaz)))+ &
-        sin(ina*alpha(inbeam))*((xnplus(is-1,inr,ina)+dxnplus(is-1,inr,ina)*deltaz)* &
-        exp(ce*(ttau-gam(is-1,inr,ina)*deltaz))-(xnminus(is-1,inr,ina)+dxnminus(is-1,inr,ina)*deltaz)* &
-        exp(ce*(ttau+gam(is-1,inr,ina)*deltaz)))))
-    dery(2*im)=velocity(im)/(w0)
-
-            end do
-            end do
-
-        end if
-    end do        !конец цикла по частицам
-    return
+!           dery(2*im) = velocity(im, ibeam)/w0
+!         end do
+!       end do
+!     end if
+!   end do
+  return
 end subroutine
 
+subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
+  use array_work
+  double precision deltaz,ttau0,ttau,prmt(5)
+  integer is, im, in, irec, ndim, itemp, ktemp, ibeam, ina
 
-subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp)
+  if (prmt(2)-ttau.lt.prmt(3)/20.0d0) then
+    prmt(5)=2.0d0
+	end if
 
-    use array_work
-!      вычисление наведенных токов. управляется из drkgs
-    double precision  deltaz,ttau0,ttau,prmt(5)
-    integer is, im, inr,inbm,irec,ndim,itemp,ktemp
+  do 2 im=1,mkk
+    velocity(im,ibeam) = yarray(2*im-1)/sqrt((yarray(2*im-1)/3.0d0)**2 + 1.0d0)
+    is = 0
+3   is = is+1
+    if((zs(is)-yarray(2*im))) 3,4,4
+4   continue
+    if (is.gt.1 .and. is.lt.sk+2) then
+      deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
 
-    if (prmt(2)-ttau.lt.prmt(3)/20.0d0) then
-        prmt(5)=2.0d0
-    end if             ! условие окончания интегрирования
+      do in = 1, nkr
+        do ina = 0, nka
+          etaplus(is-1,in,ina)=(ttau-ttau0)*constq* &
+                      (dconjg(eznbm(is-1,in,ina,ibeam))*exp(ce*(-ttau+dconjg(gam(is-1,in,ina))*deltaz))* &
+                      velocity(im,ibeam)) + etaplus(is-1,in,ina)
 
-
-    do im=1,mkk(inbeam)
-        velocity(im)=yarray(2*im-1)/sqrt((yarray(2*im-1)/3.0d0)**2.0d0)
-
-        is=0
-3       is=is+1
-        if((zs(is)-yarray(2*im))) 3,4,4       ! на каком рег. участке нах.частица
-
-4           continue
-        if (is.gt.1.and.is.lt.sk+2) then
-            deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
-
-!      deltaz - текущая координата в лок.сист.координат
-
-
-            do inr=1,nkr
-                do ina=0,nka
-
-! расчет ета -правой части для уравнений возбуждения
-
-                etaplus(is-1,inr,ina)=(ttau-ttau0)*constq* &
-                        sin(ina*alpha(inbeam))* &
-                        (dconjg(eznbm(is-1,inr,ina,inbeam))* &
-                        exp(ce*((-ttau)+dconjg(gam(is-1,inr,ina))*deltaz)))* &
-                        velocity(im)+etaplus(is-1,inr,ina)
-
-                etaminus(is-1,inr,ina)=-(ttau-ttau0)*constq* &
-                        sin(ina*alpha(inbeam))* &
-                        (dconjg(eznbm(is-1,inr,ina,inbeam))* &
-                        (exp(ce*(-ttau-dconjg(gam(is-1,inr,ina))*deltaz))* &
-                        velocity(im))+etaminus(is-1,inr,ina))
-
-                etaplus(is-1,inr,ina)=(ttau-ttau0)*constq* &
-                        cos(ina*alpha(inbeam))* &
-                        (dconjg(eznbm(is-1,inr,ina,inbeam))* &
-                        exp(ce*((-ttau)+dconjg(gam(is-1,inr,ina))*deltaz)))* &
-                        velocity(im)+etaplus(is-1,inr,ina)
-
-                etaminus(is-1,inr,ina)=-(ttau-ttau0)*constq* &
-                        cos(ina*alpha(inbeam))* &
-                        (dconjg(eznbm(is-1,inr,ina,inbeam))* &
-                        (exp(ce*(-ttau-dconjg(gam(is-1,inr,ina))*deltaz))* &
-                        velocity(im))+etaminus(is-1,inr,ina))
-
-                end do     ! конец цикла по модам
-            end do
-
-        end if
-    end do !конец цикла по частицам
-
-      ttau0=ttau
-!      write (9,10) ktemp,  itemp, ttau, irec
-
-      itemp=itemp+1
-
-!	if (itemp.eq.390) then
-!	itemp=itemp
-!	end if
-
-!	end if
+          etaminus(is-1,in,ina)=-(ttau-ttau0)*constq* &
+                      (dconjg(eznbm(is-1,in,ina,ibeam))*exp(ce*(-ttau-dconjg(gam(is-1,in,ina))*deltaz))* &
+                      velocity(im,ibeam)) + etaminus(is-1,in,ina)
+        end do
+      end do
+    end if
+2   continue
+    ttau0=ttau
+    itemp=itemp+1
 10  format(1x,'ktemp',i5,2x,'itemp',i4,2x,'ttau=  ',f17.14,2x,'irec=',i5)
     return
 end subroutine

@@ -2,7 +2,7 @@ FF = gfortran
 INCLUDE = -I/opt/local/include
 LINK = -L/Users/Adem/Dropbox/lapack-3.5.0/
 FLAGS = -llapack -lrefblas
-EXTRAFLAGS = -g -ffree-line-length-0
+EXTRAFLAGS = -g -ffree-line-length-0 -fopenmp
 objects = array_work_asymm.o geometry_and_data_asymm.o nest_multy_mode_asymm.o beam_asymm.o field_asymm.o rab.o fft_mod.o
 
 execute_assym : $(objects)

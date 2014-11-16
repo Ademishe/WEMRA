@@ -1,6 +1,7 @@
 module field_nes
   use array_work
   use com_prog
+  use omp_lib
   implicit none
 
   contains
@@ -39,6 +40,7 @@ end subroutine
 
 subroutine matrix_construct
 	integer is,i,j,kluch_shiv, ina
+  integer thread_num, thread_id
 	integer info
 	complex*16 fdplus,fdminus, fbminus, fbplus
 	kluch_shiv=1
@@ -48,26 +50,29 @@ subroutine matrix_construct
 	aa3(:,:,:,:) = (0.0d0, 0.0d0)
 	ab(:,:,:) = (0.0d0, 0.0d0)
   do ina = 0, nka
-    do is=1,sk
-       do i=1,nkr
-         do j=1,nkr
-           if (kluch_shiv.eq.1) then
-            if(is.gt.1 .and. (rt(is-1)-rt(is)).ge.(0.001d0)) then !уменьшается
-              uste1(is,i,j,ina)=(0.0d0,0.0d0)
-              uste2(is,i,j,ina)=pfunk(is,i,j,1,0,ina)
-              usth1(is,i,j,ina)=conjg(pfunk(is,j,i,1,0,ina))
-              usth2(is,i,j,ina)=(0.0d0,0.0d0)
-            end if
-            if(is.gt.1 .and. (rt(is)-rt(is-1)).gt. (0.001d0)) then !увеличивается
-              uste1(is,i,j,ina)=pfunk(is,i,j,0,1,ina)   !менял i и j местами
-              uste2(is,i,j,ina)=(0.0d0,0.0d0)
-              usth1(is,i,j,ina)=(0.0d0,0.0d0)
-              usth2(is,i,j,ina)=conjg(pfunk(is,j,i,0,1,ina))
-            end if
+!$omp parallel default(private) shared(ee, ce, dt, ina, w0, gam0, kluch_shiv, dz, nkr, sk, nka, uste1, uste2, usth1, usth2, rt, gam, d1plus, d1minus, d2plus, d2minus, dd1plus, dd1minus, dd2plus, dd2minus, mu, b1plus, b1minus, b2plus, b2minus, bb1plus, bb1minus, bb2plus, bb2minus, zn, fgammaplus, fgammaminus, db1plus, db1minus, ddb1plus, ddb1minus, ddb2plus, ddb2minus, db2plus, db2minus, ddb1plusinv, ddb1minusinv, ddb2plusinv, ddb2minusinv, dddb1, dddb2, dddb1inv, dddb2inv, alfaplus, alfaminus, betaplus, betaminus)
+!$omp do
+    do is = 1, sk
+      thread_id = omp_get_thread_num()
+      thread_num = omp_get_num_threads()
+      print *, is , sk, thread_id, thread_num
+       do i = 1, nkr
+         do j = 1, nkr
+           if(is.gt.1 .and. (rt(is-1)-rt(is)).ge.(0.001d0)) then !уменьшается
+             uste1(is,i,j,ina) = (0.0d0,0.0d0)
+             uste2(is,i,j,ina) = pfunk(is,i,j,1,0,ina)
+             usth1(is,i,j,ina) = conjg(pfunk(is,j,i,1,0,ina))
+             usth2(is,i,j,ina) = (0.0d0,0.0d0)
+           end if
+           if(is.gt.1 .and. (rt(is)-rt(is-1)).gt. (0.001d0)) then !увеличивается
+             uste1(is,i,j,ina) = pfunk(is,i,j,0,1,ina)   !менял i и j местами
+             uste2(is,i,j,ina) = (0.0d0,0.0d0)
+             usth1(is,i,j,ina) = (0.0d0,0.0d0)
+             usth2(is,i,j,ina) = conjg(pfunk(is,j,i,0,1,ina))
           end if
-			  end do
-			  fbplus = (abs(gam(is,i,ina))+gam0*gam0/abs(gam(is,i,ina)))/w0
-			  fbminus = (abs(gam(is,i,ina))-gam0*gam0/abs(gam(is,i,ina)))/w0
+        end do !end do j
+			   fbplus = (abs(gam(is,i,ina))+gam0*gam0/abs(gam(is,i,ina)))/w0
+         fbminus = (abs(gam(is,i,ina))-gam0*gam0/abs(gam(is,i,ina)))/w0
 			  fdplus=zn(is,i,ina)/abs(zn(is,i,ina))+conjg(zn(is,i,ina))/abs(zn(is,i,ina))
 			  fdminus=-zn(is,i,ina)/abs(zn(is,i,ina))+conjg(zn(is,i,ina))/abs(zn(is,i,ina))
 			  d1plus(is,i,i,ina) = (fexp(is,i,-1,-1,ina)-fexp(is,i,1,-1,ina))*  fdplus
@@ -167,6 +172,9 @@ subroutine matrix_construct
 		  call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),ddb1minusinv(is,:,:,ina),nkr,db2minus(is,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
       call zgemm('n','n',nkr,nkr,nkr,(1.0d0,0.0d0),dddb2inv(is,:,:,ina),nkr,rab1,nkr,(0.0d0,0.0d0),betaminus(is,:,:,ina),nkr)
     end do
+!$omp end do
+!$omp end parallel
+
     do is=2,sk
 		  call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaplus(is-1,:,:,ina),nkr,alfaplus(is-1,:,:,ina),nkr,(0.0d0,0.0d0),rab1,nkr)
 		  call zgemm('n','n',nkr,nkr,nkr,dz(is-1)/2.0d0*ee,fgammaminus(is-1,:,:,ina),nkr,alfaminus(is-1,:,:,ina),nkr,(1.0d0,0.0d0),rab1,nkr)
@@ -367,117 +375,8 @@ subroutine field_calc
   return
 end subroutine field_calc
 
-
-
-double complex function fexp(is,i,k1,k2,ina)
-	integer is,i,k1,k2,ina
-  fexp=exp(ce*k1*(gam(is,i,ina)+k2*conjg(gam(is,i,ina)))*(0.5d0*dz(is)))
-end function
-
-
-double complex function funk1(is,inr,ina)
-	integer is,inr,ina
-  funk1=(exp(ce*gam(is,inr,ina)*dz(is))-exp(-ce*gam(is,inr,ina)*dz(is)))/(ce*2*gam(is,inr,ina))
-end function
-
-
-double complex function funk2(is,inr,ina)
-  integer is,inr,ina
-  funk2=(exp(ce*gam(is,inr,ina)*dz(is))+exp(-ce*gam(is,inr,ina)*dz(is)))/(ce*2*gam(is,inr,ina))
-end function
-
-
-double complex function pfunk(is,l,m,Ec,Hc,nk_index)
-  integer is, m, l, n, k, Ec, Hc, nk_index
-  complex*16 const_part, part_1, part_2, E_nm, E_kl, integral, temp_int
-  real*8 chi_nm, chi_kl, accuracy
-  part_1 = (0.0d0, 0.0d0)
-  temp_int = (0.0d0, 0.0d0)
-  n = nk_index
-  k = nk_index
-  accuracy = 0.001d0
-
-  chi_nm = mu(m, n)/rt(is-Hc)
-  chi_kl = mu(m, n)/rt(is-Hc)
-  if (n.ne.0 .and. k.ne.0) then
-    temp_int = (n*k/chi_kl/chi_nm) * integrate(bessel_mult, 0.0d0, rt(is-Hc), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
-  end if
-  integral =  integrate(der_bessel_mult, 0.0d0, rt(is-Hc), accuracy) * integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy) + temp_int
-  E_kl = sqrt(zn(is-Hc, m, n) / abs(zn(is-Hc, m, n)) * chi_nm * chi_kl * conjg(zn(is-Hc, m, n)) / gam(is-Hc, m, n) / conjg(gam(is-Hc, m, n)) / integral)
-
-  chi_nm = mu(l, k)/rt(is-Ec)
-  chi_kl = mu(l, k)/rt(is-Ec)
-  if (n.ne.0 .and. k.ne.0) then
-    temp_int = (n*k/chi_kl/chi_nm) * integrate(bessel_mult, 0.0d0, rt(is-Ec), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
-  end if
-  integral =  integrate(der_bessel_mult, 0.0d0, rt(is-Ec), accuracy) * integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy) + temp_int
-  E_nm = sqrt(zn(is-Ec, l, k) / abs(zn(is-Ec, l, k)) * chi_nm * chi_kl * conjg(zn(is-Ec, l, k)) / gam(is-Ec, l, k) / conjg(gam(is-Ec, l, k)) / integral)
-
-  chi_nm = mu(m, n)/rt(is-Hc)
-  chi_kl = mu(l, k)/rt(is-Ec)
-  const_part =  gam(is-Hc, m, n)*conjg(gam(is-Ec, l,k)) / conjg(zn(is-Ec, l, k)) / chi_nm / chi_kl
-  part_2 = integrate(der_bessel_mult, 0.0d0, rt(is-Hc), accuracy) * integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy)
-  if (n.ne.0 .and. k.ne.0) then
-    part_1 = (n*k/chi_kl/chi_nm) * integrate(bessel_mult, 0.0d0, rt(is-Hc), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
-  end if
-
-  pfunk = const_part * (part_1 + part_2) * E_nm * conjg(E_kl)
-  if (mod(m+l,2).ne.0 ) then
-    pfunk = -pfunk
-  end if
-  ! print *, pfunkr, n, m, k, l
-  return
-  contains
-
-  real*8 function bessel_mult(r)
-    real*8 r
-    bessel_mult = bessel_jn(n, chi_nm*r) * bessel_jn(k, chi_kl*r) / r
-    return
-  end function
-
-  real*8 function der_bessel_mult(r)
-    real*8 r
-    der_bessel_mult = (bessel_jn(n-1, chi_nm*r) - bessel_jn(n+1, chi_nm*r)) * &
-                      (bessel_jn(k-1, chi_kl*r) - bessel_jn(k+1, chi_kl*r)) / 4.0d0 * r
-    return
-  end function
-
-  real*8 function cossin_mult(r)
-    real*8 r
-    cossin_mult = cos(n*r)*cos(k*r)
-    return
-  end function
-
-  real*8 function der_cossin_mult(r)
-    real*8 r
-    der_cossin_mult = sin(n*r)*sin(k*r)
-    return
-  end function
-end function
-
-
-real function integrate(func, a, b, eps)
-    implicit none
-    real*8 :: a, b, eps
-    real*8, external :: func
-    real*8 :: curr, prev
-    integrate = 0.0d0
-    prev = a
-    curr = a + eps
-    do while (curr < b)
-        integrate = integrate + (curr - prev) * 0.5d0 * &
-        (func((prev+curr)*0.5d0 - (curr-prev)*0.2886751345948129d0) + &
-        func((prev+curr)*0.5d0 + (curr-prev)*0.2886751345948129d0))
-        prev = curr
-        curr = curr + eps
-    end do
-    return
-end function integrate
-
-
 subroutine progonka
   integer info, is, ina
-  ! print *, aa1(sk,nkr,:,1)
   do ina = 0, nka
     betap(:,:) = (0.0d0, 0.0d0)
     alphap(:,:,:) = (0.0d0, 0.0d0)
@@ -517,7 +416,92 @@ subroutine progonka
       xbplus(is,:,ina)=betap(is+1,:)+xbplus(is,:,ina)
     end do
   end do ! end ina
-	return
+  return
 end subroutine progonka
+
+double complex function fexp(is,i,k1,k2,ina)
+	integer is,i,k1,k2,ina
+  fexp=exp(ce*k1*(gam(is,i,ina)+k2*conjg(gam(is,i,ina)))*(0.5d0*dz(is)))
+end function fexp
+
+
+double complex function funk1(is,inr,ina)
+	integer is,inr,ina
+  funk1=(exp(ce*gam(is,inr,ina)*dz(is))-exp(-ce*gam(is,inr,ina)*dz(is)))/(ce*2*gam(is,inr,ina))
+end function funk1
+
+
+double complex function funk2(is,inr,ina)
+  integer is,inr,ina
+  funk2=(exp(ce*gam(is,inr,ina)*dz(is))+exp(-ce*gam(is,inr,ina)*dz(is)))/(ce*2*gam(is,inr,ina))
+end function funk2
+
+double complex function pfunk(is,l,m,Ec,Hc,nk_index)
+  integer is, m, l, n, k, Ec, Hc, nk_index
+  complex*16 const_part, part_1, part_2, E_nm, E_kl, integral, temp_int
+  real*8 chi_nm, chi_kl, accuracy
+  part_1 = (0.0d0, 0.0d0)
+  temp_int = (0.0d0, 0.0d0)
+  n = nk_index
+  k = nk_index
+  accuracy = 0.0001d0
+
+  chi_nm = mu(m, n)/rt(is-Hc)
+  chi_kl = mu(m, n)/rt(is-Hc)
+  if (n.ne.0 .and. k.ne.0) then
+    temp_int = (n*k/chi_kl/chi_nm) * integrate(bessel_mult, 0.0d0, rt(is-Hc), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
+  end if
+  integral =  integrate(der_bessel_mult, 0.0d0, rt(is-Hc), accuracy) * integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy) + temp_int
+  E_kl = sqrt(zn(is-Hc, m, n) / abs(zn(is-Hc, m, n)) * chi_nm * chi_kl * conjg(zn(is-Hc, m, n)) / gam(is-Hc, m, n) / conjg(gam(is-Hc, m, n)) / integral)
+
+  chi_nm = mu(l, k)/rt(is-Ec)
+  chi_kl = mu(l, k)/rt(is-Ec)
+  if (n.ne.0 .and. k.ne.0) then
+    temp_int = (n*k/chi_kl/chi_nm) * integrate(bessel_mult, 0.0d0, rt(is-Ec), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
+  end if
+  integral =  integrate(der_bessel_mult, 0.0d0, rt(is-Ec), accuracy) * integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy) + temp_int
+  E_nm = sqrt(zn(is-Ec, l, k) / abs(zn(is-Ec, l, k)) * chi_nm * chi_kl * conjg(zn(is-Ec, l, k)) / gam(is-Ec, l, k) / conjg(gam(is-Ec, l, k)) / integral)
+
+  chi_nm = mu(m, n)/rt(is-Hc)
+  chi_kl = mu(l, k)/rt(is-Ec)
+  const_part =  gam(is-Hc, m, n)*conjg(gam(is-Ec, l,k)) / conjg(zn(is-Ec, l, k)) / chi_nm / chi_kl
+  part_2 = integrate(der_bessel_mult, 0.0d0, rt(is-Hc), accuracy) * integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy)
+  if (n.ne.0 .and. k.ne.0) then
+    part_1 = (n*k/chi_kl/chi_nm) * integrate(bessel_mult, 0.0d0, rt(is-Hc), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
+  end if
+
+  pfunk = const_part * (part_1 + part_2) * E_nm * conjg(E_kl)
+  if (mod(m+l,2).ne.0) then
+    pfunk = -pfunk
+  end if
+  ! print *, pfunk, n, m, k, l
+  return
+  contains
+
+  real*8 function bessel_mult(r)
+    real*8 r
+    bessel_mult = bessel_jn(n, chi_nm*r) * bessel_jn(k, chi_kl*r) / r
+    return
+  end function
+
+  real*8 function der_bessel_mult(r)
+    real*8 r
+    der_bessel_mult = (bessel_jn(n-1, chi_nm*r) - bessel_jn(n+1, chi_nm*r)) * &
+                      (bessel_jn(k-1, chi_kl*r) - bessel_jn(k+1, chi_kl*r)) / 4.0d0 * r
+    return
+  end function
+
+  real*8 function cossin_mult(r)
+    real*8 r
+    cossin_mult = cos(n*r)*cos(k*r)
+    return
+  end function
+
+  real*8 function der_cossin_mult(r)
+    real*8 r
+    der_cossin_mult = sin(n*r)*sin(k*r)
+    return
+  end function
+end function pfunk
 
 end  module field_nes
