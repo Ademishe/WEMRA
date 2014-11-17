@@ -1,6 +1,7 @@
 module geometry_and_data
 use array_work
 use com_prog
+use omp_lib
 implicit none
 contains
 
@@ -51,8 +52,10 @@ subroutine parameters1
   delta_alpha = 2.0d0*pi / nbeam
   do ibeam = 1, nbeam
     alpha(ibeam) = (ibeam - 1) * delta_alpha
-    rb(ibeam) = rb0 / (1 + ellips*cos(alpha(ibeam)))
+    rb(ibeam) = rb0 / (1.0d0 + ellips*abs(cos(alpha(ibeam))))
   end do
+  print *, rb(:)
+  print *, alpha(:)
 
   if ( kluch_beam.eq.0) then    ! холодная задача
     const1=0.0d0
@@ -69,13 +72,6 @@ end subroutine
 
 subroutine read_bessel_zeros
   integer ia,i_r,i_alpha, i, index
-  ! character(len=100) arg
-  ! call getarg(0, arg)
-  ! do i = 1, 100
-  !   if (arg(i) .eq. '/') index = i
-  ! end do
-  ! arg = arg(:index) // 'bessel_zeros.cfg'
-  ! print *, arg
   open (32,file='bessel_zeros.cfg')
     do i_alpha=0,10
         do i_r=1,50
@@ -104,13 +100,16 @@ end subroutine
 
 subroutine eid
   integer inr, is, ina, inbm
-  complex*16 E, integral, temp_int
+  complex*16 E, integral, temp_int, a, b
+  integer thread_num, thread_id
   real*8 accuracy, chi
   accuracy = 0.0001d0
-
-!$omp parallel default(private) shared(accuracy, gam, rt, zn, nbeam, nka, nkr, ce, ee, alpha, rb, eznbm, ernbm, ephinbm, mu, sk)
-!$omp do
+!!$omp parallel default(private) shared(eznbm, ernbm, ephinbm, rt, gam, zn, rb, mu, alpha, accuracy, sk, nbeam, nka, nkr, ce, ee)
+!!$omp do
   do is = 1, sk
+    ! thread_id = omp_get_thread_num()
+    ! thread_num = omp_get_num_threads()
+    ! print *, "***eid***",  is, sk!, thread_id, thread_num
     do inbm = 1, nbeam
       do ina = 0, nka
         do inr = 1, nkr
@@ -119,8 +118,11 @@ subroutine eid
           if (ina.ne.0) then
             temp_int = (ina*ina/chi/chi) * integrate(bessel_mult, 0.0d0, rt(is), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
           end if
-          integral = integrate(der_bessel_mult, 0.0d0, rt(is), accuracy) * integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy) + temp_int
+          a = integrate(der_bessel_mult, 0.0d0, rt(is), accuracy)
+          b = integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy)
+          integral = a * b + temp_int
           E = sqrt(zn(is, inr, ina) / abs(zn(is, inr, ina)) * chi * chi * conjg(zn(is, inr, ina)) / gam(is, inr, ina) / conjg(gam(is, inr, ina)) / integral)
+          ! print *, E, integral, a, b, temp_int
           eznbm(is,inr,ina,inbm) = bessel_jn(ina, chi*rb(inbm)) * cos(ina*alpha(inbm)) * E
           ernbm(is,inr,ina,inbm) = -ce * gam(is, inr, ina) / chi * 0.5d0 * (bessel_jn(ina-1, chi*rb(inbm)) - bessel_jn(ina+1, chi*rb(inbm))) * cos(ina*alpha(inbm)) * E
           ephinbm(is,inr,ina,inbm) = -ce * gam(is, inr, ina) / chi / chi * ina / rb(inbm) * bessel_jn(ina, chi*rb(inbm)) * sin(ina*alpha(inbm)) * E
@@ -128,8 +130,8 @@ subroutine eid
       end do
     end do
   end do
-!$omp end do
-!$omp end parallel
+!!$omp end do
+!!$omp end parallel
   return
   contains
 

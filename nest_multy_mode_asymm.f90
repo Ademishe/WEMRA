@@ -107,6 +107,7 @@ program nest_multy_mode_nes
 		print *, "nka =", nka
 		print *, "ktimemax =", ktimemax
 		print *, "sk = ", sk
+		print *, "ellips = ", ellips
     call configarr !выделение памяти для основных массивов
 		call init_main_arrays
 		call read_bessel_zeros
@@ -126,6 +127,7 @@ program nest_multy_mode_nes
 		w0=wh0+(iomega-1)*dw
 		print *, iomega, w0
 !			beam_voltage = (1.0d0/sqrt(1-((dz1*sdop1+dz2*sdop2)*w0/betazd/3.0d0)**2)-1.0d0)*511.0d0
+		print *, "indat"
 		call indat            ! проведение вспомогательных расчетов geometry_and_data
 
 		if (iomega.eq.1) then
@@ -133,6 +135,7 @@ program nest_multy_mode_nes
 			call config_beam
 		end if
 		call init_arrays
+		print *, "matrix_construct"
 		call matrix_construct ! определение статических матриц
 		call manager(stepwrite,iw)
   end do
