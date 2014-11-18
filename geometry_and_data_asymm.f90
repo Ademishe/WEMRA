@@ -17,7 +17,6 @@ subroutine indat
     ! print *, rt(:)
     call parameters1
     call gazel1
-    call eid
     dt=2.0d0*pi
 
     write (7,12) w0,v0,rel_factor
@@ -51,7 +50,7 @@ subroutine parameters1
 
   delta_alpha = 2.0d0*pi / nbeam
   do ibeam = 1, nbeam
-    alpha(ibeam) = (ibeam - 1) * delta_alpha
+    alpha(ibeam) = (ibeam - 1) * delta_alpha + alpha_shift
     rb(ibeam) = rb0 / (1.0d0 + ellips*abs(cos(alpha(ibeam))))
   end do
   print *, rb(:)

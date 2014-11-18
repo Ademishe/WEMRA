@@ -12,6 +12,7 @@ program nest_multy_mode_nes
 		use field_nes
 		use geometry_and_data
 		use com_prog
+		use omp_lib
 
     implicit none
 
@@ -63,7 +64,7 @@ program nest_multy_mode_nes
     read (3,1000)                             string
     read (3,*)    ampl_enter,ampl_exit
     read (3,1000)                             string
-    read (3,*)    beam_curr,beam_voltage,rb0,mk0,nbeam,ellips
+    read (3,*)    beam_curr,beam_voltage,rb0,mk0,nbeam,ellips, alpha_shift
     read (3,1000)                             string
     read (3,*)    ampl_mod, step_prmt, prmt_4
 
@@ -131,6 +132,7 @@ program nest_multy_mode_nes
 		call indat            ! проведение вспомогательных расчетов geometry_and_data
 
 		if (iomega.eq.1) then
+			call eid
 			call configfield   ! выделение памяти для вспомогательных матриц
 			call config_beam
 		end if

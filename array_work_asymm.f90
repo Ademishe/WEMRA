@@ -28,7 +28,7 @@ module array_work
             sdop11,sdop12,sdop21,sdop22,sdop31,sdop32,mk0,ns2,ns4, &
             mkns,ktimemax, kluch_beam, kluch_structur(3),nka,nkr, &
             nbeam, mkk
-    real*8  dt,rb0, ellips
+    real*8  dt,rb0, ellips, alpha_shift
     real*8  w0,rel_factor,constq, const1, ddz,v0, &
             rt01,rt02,rt03,dz01,dz02,dz03, &
             rt1,rt2,dz11,dz12,dz21,dz22,dz31,dz32,zss, &
