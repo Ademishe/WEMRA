@@ -479,27 +479,27 @@ double complex function pfunk(is,l,m,Ec,Hc,nk_index)
   return
   contains
 
-  real*8 function bessel_mult(r)
-    real*8 r
+  real*8 function bessel_mult(r, arg1)
+    real*8 r, arg1
     bessel_mult = bessel_jn(n, chi_nm*r) * bessel_jn(k, chi_kl*r) / r
     return
   end function
 
-  real*8 function der_bessel_mult(r)
-    real*8 r
+  real*8 function der_bessel_mult(r, arg1)
+    real*8 r, arg1
     der_bessel_mult = (bessel_jn(n-1, chi_nm*r) - bessel_jn(n+1, chi_nm*r)) * &
                       (bessel_jn(k-1, chi_kl*r) - bessel_jn(k+1, chi_kl*r)) / 4.0d0 * r
     return
   end function
 
-  real*8 function cossin_mult(r)
-    real*8 r
+  real*8 function cossin_mult(r, arg1)
+    real*8 r, arg1
     cossin_mult = cos(n*r)*cos(k*r)
     return
   end function
 
-  real*8 function der_cossin_mult(r)
-    real*8 r
+  real*8 function der_cossin_mult(r, arg1)
+    real*8 r, arg1
     der_cossin_mult = sin(n*r)*sin(k*r)
     return
   end function

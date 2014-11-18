@@ -100,38 +100,44 @@ end subroutine
 
 subroutine eid
   integer inr, is, ina, inbm
-  complex*16 E, integral, temp_int, a, b
   integer thread_num, thread_id
-  real*8 accuracy, chi
-  accuracy = 0.0001d0
-!!$omp parallel default(private) shared(eznbm, ernbm, ephinbm, rt, gam, zn, rb, mu, alpha, accuracy, sk, nbeam, nka, nkr, ce, ee)
-!!$omp do
+!$omp parallel default(private) shared(eznbm, ernbm, ephinbm, rt, gam, zn, rb, mu, alpha, sk, nbeam, nka, nkr, ce, ee)
+!$omp do
   do is = 1, sk
-    ! thread_id = omp_get_thread_num()
-    ! thread_num = omp_get_num_threads()
-    ! print *, "***eid***",  is, sk!, thread_id, thread_num
+    thread_id = omp_get_thread_num()
+    thread_num = omp_get_num_threads()
+    print *, "***eid***",  is, sk, thread_id, thread_num
     do inbm = 1, nbeam
       do ina = 0, nka
         do inr = 1, nkr
-          temp_int = 0.0d0
-          chi = mu(inr, ina)/rt(is)
-          if (ina.ne.0) then
-            temp_int = (ina*ina/chi/chi) * integrate(bessel_mult, 0.0d0, rt(is), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
-          end if
-          a = integrate(der_bessel_mult, 0.0d0, rt(is), accuracy)
-          b = integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy)
-          integral = a * b + temp_int
-          E = sqrt(zn(is, inr, ina) / abs(zn(is, inr, ina)) * chi * chi * conjg(zn(is, inr, ina)) / gam(is, inr, ina) / conjg(gam(is, inr, ina)) / integral)
-          ! print *, E, integral, a, b, temp_int
-          eznbm(is,inr,ina,inbm) = bessel_jn(ina, chi*rb(inbm)) * cos(ina*alpha(inbm)) * E
-          ernbm(is,inr,ina,inbm) = -ce * gam(is, inr, ina) / chi * 0.5d0 * (bessel_jn(ina-1, chi*rb(inbm)) - bessel_jn(ina+1, chi*rb(inbm))) * cos(ina*alpha(inbm)) * E
-          ephinbm(is,inr,ina,inbm) = -ce * gam(is, inr, ina) / chi / chi * ina / rb(inbm) * bessel_jn(ina, chi*rb(inbm)) * sin(ina*alpha(inbm)) * E
+          eznbm(is,inr,ina,inbm) = get_eznbm(is, ina, inr, inbm)
+          ! ernbm(is,inr,ina,inbm) = -ce * gam(is, inr, ina) / chi * 0.5d0 * (bessel_jn(ina-1, chi*rb(inbm)) - bessel_jn(ina+1, chi*rb(inbm))) * cos(ina*alpha(inbm)) * E
+          ! ephinbm(is,inr,ina,inbm) = -ce * gam(is, inr, ina) / chi / chi * ina / rb(inbm) * bessel_jn(ina, chi*rb(inbm)) * sin(ina*alpha(inbm)) * E
         end do
       end do
     end do
   end do
-!!$omp end do
-!!$omp end parallel
+!$omp end do
+!$omp end parallel
+  return
+end subroutine
+
+
+complex* 16 function get_eznbm(is, ina, inr, inbm)
+  integer is, ina, inr, inbm
+  complex*16 integral, temp_int, a, b, E
+  real*8 accuracy, chi
+  accuracy = 0.001d0
+  temp_int = 0.0d0
+  chi = mu(inr, ina)/rt(is)
+  if (ina.ne.0) then
+    temp_int = (ina*ina/chi/chi) * integrate(bessel_mult, 0.0d0, rt(is), accuracy) * integrate(der_cossin_mult, 0.0d0, 6.2831853d0, accuracy)
+  end if
+  a = integrate(der_bessel_mult, 0.0d0, rt(is), accuracy)
+  b = integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy)
+  integral = a * b + temp_int
+  E = sqrt(zn(is, inr, ina) / abs(zn(is, inr, ina)) * chi * chi * conjg(zn(is, inr, ina)) / gam(is, inr, ina) / conjg(gam(is, inr, ina)) / integral)
+  get_eznbm = bessel_jn(ina, chi*rb(inbm)) * cos(ina*alpha(inbm)) * E
   return
   contains
 
@@ -158,7 +164,7 @@ subroutine eid
     der_cossin_mult = sin(ina*r)**2
     return
   end function
-end subroutine
+end function
 
 
 subroutine geom1
