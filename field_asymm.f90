@@ -40,7 +40,7 @@ end subroutine
 
 subroutine matrix_construct
 	integer is,i,j,kluch_shiv, ina
-  integer thread_num, thread_id
+  ! integer thread_num, thread_id
 	integer info
 	complex*16 fdplus,fdminus, fbminus, fbplus
 	kluch_shiv=1
@@ -53,8 +53,8 @@ subroutine matrix_construct
 !$omp parallel default(private) shared(ee, ce, dt, ina, w0, gam0, kluch_shiv, dz, nkr, sk, nka, uste1, uste2, usth1, usth2, rt, gam, d1plus, d1minus, d2plus, d2minus, dd1plus, dd1minus, dd2plus, dd2minus, mu, b1plus, b1minus, b2plus, b2minus, bb1plus, bb1minus, bb2plus, bb2minus, zn, fgammaplus, fgammaminus, db1plus, db1minus, ddb1plus, ddb1minus, ddb2plus, ddb2minus, db2plus, db2minus, ddb1plusinv, ddb1minusinv, ddb2plusinv, ddb2minusinv, dddb1, dddb2, dddb1inv, dddb2inv, alfaplus, alfaminus, betaplus, betaminus)
 !$omp do
     do is = 1, sk
-      thread_id = omp_get_thread_num()
-      thread_num = omp_get_num_threads()
+      ! thread_id = omp_get_thread_num()
+      ! thread_num = omp_get_num_threads()
       ! print *, "***matrix_construct***", is, sk, ina, thread_id, thread_num
       ! print *, is, sk
        do i = 1, nkr

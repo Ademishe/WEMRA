@@ -132,7 +132,6 @@ program nest_multy_mode_nes
 		call indat            ! проведение вспомогательных расчетов geometry_and_data
 
 		if (iomega.eq.1) then
-			call eid
 			call configfield   ! выделение памяти для вспомогательных матриц
 			call config_beam
 		end if

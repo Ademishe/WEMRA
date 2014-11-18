@@ -17,6 +17,7 @@ subroutine indat
     ! print *, rt(:)
     call parameters1
     call gazel1
+    call eid
     dt=2.0d0*pi
 
     write (7,12) w0,v0,rel_factor
