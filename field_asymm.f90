@@ -445,7 +445,7 @@ double complex function pfunk(is,l,m,Ec,Hc,nk_index)
   temp_int = (0.0d0, 0.0d0)
   n = nk_index
   k = nk_index
-  accuracy = 0.0001d0
+  accuracy = 0.001d0
 
   chi_nm = mu(m, n)/rt(is-Hc)
   chi_kl = mu(m, n)/rt(is-Hc)

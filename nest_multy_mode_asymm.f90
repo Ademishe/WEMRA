@@ -40,7 +40,6 @@ program nest_multy_mode_nes
     open (5,file='spectrum.dat')
     open (9,file='iter.dat')
     open (7,file='sum.dat')
-    open (21,file='power.dat')
     open (22,file='eta.dat')
     open (23,file='yarray.dat')
     open (24,file='field1.dat')
@@ -147,7 +146,6 @@ program nest_multy_mode_nes
   close (5)
   close (9)
   close (7)
-  close (21)
   close (22)
   close (23)
   close (24)
@@ -198,6 +196,9 @@ subroutine manager (stepwrite,iw)
 !     то такое istwr? - это счетчик шагов при итерировании, нужен для записи на диск
   	istwr=istwr+1
     tau=tau+dt
+		if (k.ge.10 .and. kluch_beam.eq.1) then
+			ampl_mod = 0.0d0
+		end if
     call matrix_dynamic
   	call progonka
     call field_calc
@@ -212,7 +213,14 @@ subroutine manager (stepwrite,iw)
     xnminus(:,:,:) = xbminus(:,:,:)
     dxnplus(:,:,:) = dxbplus(:,:,:)
     dxnminus(:,:,:) = dxbminus(:,:,:)
-		if (kluch_beam.eq.2 .and. k.eq.1) call beam_calc(tau)
+
+		if (kluch_beam.eq.2 .and. k.eq.1) then
+			 call beam_calc(tau)
+		else if(kluch_beam.eq.1) then
+			etaplus = (0.0d0,0.0d0)
+			etaminus= (0.0d0,0.0d0)
+			call beam_calc(tau)
+		end if
   end do ! конец основного цикла
 
   if(kluch_beam.eq.0) then
@@ -566,8 +574,10 @@ subroutine field_power(k,kluch1)
 		print *, "POWER_SUM =", powersum
 		! print *, "beam_curr =", beam_curr, "beam_voltage", beam_voltage
     dva_d_na_lambda=periodz1*w0/(pi*3.0d0)
-
+		print *, "WRITING POWER TO FILE"
+		open (21,file='power.dat', access = 'APPEND')
     write (21,922) dva_d_na_lambda,w0,beam_voltage,k,0,powerenter,powerexit,sum,powersum
+		close (21)
   end if
 921 format(1x,'k=',i5,2x,i4,2x,'is_p_p+_p-=',i4,2x,e10.3,2x,e10.3,2x,e10.3,2x,'im(p)=',e9.2)
 922 format('2d/lam=',f7.3,2x,'w0=',f7.3,2x,'u0=',f8.2,2x,'k_pent_pex_sum_psum=',i4,2x,i4,2x,4(e10.3,2x))

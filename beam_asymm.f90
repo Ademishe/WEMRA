@@ -107,31 +107,28 @@ subroutine fct(ttau, ibeam)
 	real*8 ttau
   double precision  deltaz
   integer is, im, in, ina, ibeam
-!
-!   do im=1,mkk
-!     is=0
-! 3   is=is+1
-!     if((zs(is) - yarray(2*im))) 3,3,4
-! 4   continue
-!
-!     if (is.eq.1 .or. is.eq.sk+2) then
-!       dery(2*im-1)=0.0d0
-!       dery(2*im)=velocity(im,ibeam)/w0
-!     else
-!       dery(2*im-1)=0.0d0
-!       deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
-!       do in = 1, nkr
-!         do ina = 0, nka
-!           dery(2*im-1) = dery(2*im-1) + const1*dreal(eznbm(is-1, in, ina, ibeam) * &
-!             ((xnplus(is-1,in,ina)+dxnplus(is-1,in,ina)*deltaz)* &
-!             exp(ce*(ttau-gam(is-1,in,ina)*deltaz))-(xnminus(is-1,in,ina) + &
-! 		        dxnminus(is-1,in,ina)*deltaz)*exp(ce*(ttau+gam(is-1,in,ina)*deltaz))))
-!
-!           dery(2*im) = velocity(im, ibeam)/w0
-!         end do
-!       end do
-!     end if
-!   end do
+
+  do im=1,mkk
+    is=0
+3   is=is+1
+    if((zs(is) - yarray(2*im))) 3,3,4
+4   continue
+
+    if (is.eq.1 .or. is.eq.sk+2) then
+      dery(2*im-1)=0.0d0
+      dery(2*im)=velocity(im,ibeam)/w0
+    else
+      dery(2*im-1)=0.0d0
+      deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
+      do in = 1, nkr
+        do ina = 0, nka
+          dery(2*im-1) = dery(2*im-1) + const1*dreal(eznbm(is-1, in, ina, ibeam) * ((xnplus(is-1,in,ina)+dxnplus(is-1,in,ina)*deltaz)* &
+            exp(ce*(ttau-gam(is-1,in,ina)*deltaz))-(xnminus(is-1,in,ina) + dxnminus(is-1,in,ina)*deltaz)*exp(ce*(ttau+gam(is-1,in,ina)*deltaz))))
+          dery(2*im) = velocity(im, ibeam)/w0
+        end do
+      end do
+    end if
+  end do
   return
 end subroutine
 
