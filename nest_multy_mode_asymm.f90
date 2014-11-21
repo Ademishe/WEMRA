@@ -215,11 +215,12 @@ subroutine manager (stepwrite,iw)
     dxnminus(:,:,:) = dxbminus(:,:,:)
 
 		if (kluch_beam.eq.2 .and. k.eq.1) then
-			 call beam_calc(tau)
+			call beam_calc(tau)
 		else if(kluch_beam.eq.1) then
 			etaplus = (0.0d0,0.0d0)
 			etaminus= (0.0d0,0.0d0)
 			call beam_calc(tau)
+			call field_power(k,2)
 		end if
   end do ! конец основного цикла
 
