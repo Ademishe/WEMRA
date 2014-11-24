@@ -56,24 +56,23 @@ subroutine matrix_construct
       thread_id = omp_get_thread_num()
       thread_num = omp_get_num_threads()
       print *, "***matrix_construct***", is, sk, ina, thread_id, thread_num
-      ! print *, is, sk
-       do i = 1, nkr
-         do j = 1, nkr
-           if(is.gt.1 .and. (rt(is-1)-rt(is)).ge.(0.001d0)) then !уменьшается
-             uste1(is,i,j,ina) = (0.0d0,0.0d0)
-             uste2(is,i,j,ina) = pfunk(is,i,j,1,0,ina)
-             usth1(is,i,j,ina) = conjg(pfunk(is,j,i,1,0,ina))
-             usth2(is,i,j,ina) = (0.0d0,0.0d0)
-           end if
-           if(is.gt.1 .and. (rt(is)-rt(is-1)).gt. (0.001d0)) then !увеличивается
-             uste1(is,i,j,ina) = pfunk(is,i,j,0,1,ina)   !менял i и j местами
-             uste2(is,i,j,ina) = (0.0d0,0.0d0)
-             usth1(is,i,j,ina) = (0.0d0,0.0d0)
-             usth2(is,i,j,ina) = conjg(pfunk(is,j,i,0,1,ina))
+      do i = 1, nkr
+        do j = 1, nkr
+          if(is.gt.1 .and. (rt(is-1)-rt(is)).ge.(0.001d0)) then !уменьшается
+            uste1(is,i,j,ina) = (0.0d0,0.0d0)
+            uste2(is,i,j,ina) = pfunk(is,i,j,1,0,ina)
+            usth1(is,i,j,ina) = conjg(pfunk(is,j,i,1,0,ina))
+            usth2(is,i,j,ina) = (0.0d0,0.0d0)
+          end if
+          if(is.gt.1 .and. (rt(is)-rt(is-1)).gt. (0.001d0)) then !увеличивается
+            uste1(is,i,j,ina) = pfunk(is,i,j,0,1,ina)   !менял i и j местами
+            uste2(is,i,j,ina) = (0.0d0,0.0d0)
+            usth1(is,i,j,ina) = (0.0d0,0.0d0)
+            usth2(is,i,j,ina) = conjg(pfunk(is,j,i,0,1,ina))
           end if
         end do !end do j
-			   fbplus = (abs(gam(is,i,ina))+gam0*gam0/abs(gam(is,i,ina)))/w0
-         fbminus = (abs(gam(is,i,ina))-gam0*gam0/abs(gam(is,i,ina)))/w0
+			  fbplus = (abs(gam(is,i,ina))+gam0*gam0/abs(gam(is,i,ina)))/w0
+        fbminus = (abs(gam(is,i,ina))-gam0*gam0/abs(gam(is,i,ina)))/w0
 			  fdplus=zn(is,i,ina)/abs(zn(is,i,ina))+conjg(zn(is,i,ina))/abs(zn(is,i,ina))
 			  fdminus=-zn(is,i,ina)/abs(zn(is,i,ina))+conjg(zn(is,i,ina))/abs(zn(is,i,ina))
 			  d1plus(is,i,i,ina) = (fexp(is,i,-1,-1,ina)-fexp(is,i,1,-1,ina))*  fdplus

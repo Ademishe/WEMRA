@@ -46,7 +46,8 @@ subroutine parameters1
   ee=(1.0d0,0.0d0)
   pi = 3.14159265359d0
   gam0= w0/3.0d0
-  constq = 2.0d0*beam_curr/mk0/(w0**2)*2.0d0*pi  !для уравн.возбуждения; здесь не должно быть 2pi
+  constq = 2.0d0*beam_curr/(w0**2)*2.0d0*pi/nbeam  !для уравн.возбуждения
+  print *, "constq", constq
   const1 = -9.0d0/(511.0d0*1000.0d0*w0) !для уравн. движения
 
   delta_alpha = 2.0d0*pi / nbeam
@@ -123,7 +124,7 @@ subroutine eid
 end subroutine
 
 
-complex* 16 function get_eznbm(is, ina, inr, inbm)
+complex*16 function get_eznbm(is, ina, inr, inbm)
   integer is, ina, inr, inbm
   complex*16 integral, temp_int, a, b, E
   real*8 accuracy, chi

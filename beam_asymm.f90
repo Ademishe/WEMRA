@@ -28,6 +28,8 @@ subroutine beam_calc (tau)
 	real*8 tau
 	integer imm, k12, i, mk, mkk1, is, in, ina, ibeam
   double precision sum0,prmt(5)
+!!$omp parallel default(private) public(nbeam, nka, nkr, mkk, mkns, all_yarray, all_dery, tau, dt, step_prmt, prmt_4, mk0, velocity)
+!!$omp do
   do ibeam = 1, nbeam
     yarray(:) = all_yarray(:, ibeam)
     dery(:) = all_dery(:, ibeam)
@@ -80,7 +82,9 @@ subroutine beam_calc (tau)
     end do
     all_dery(:, ibeam) = dery(:)
     all_yarray(:, ibeam) = yarray(:)
-  end do ! end do ina
+  end do ! end do ibeam
+!!$omp end do
+!!$omp end parallel
 
   if (kluch_beam.eq.2 .or. kluch_beam.eq.3) then
     open(unit = 22,file='eta.dat', access = 'APPEND')
@@ -149,7 +153,7 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
 4   continue
     if (is.gt.1 .and. is.lt.sk+2) then
       deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
-
+!$omp critical
       do in = 1, nkr
         do ina = 0, nka
           etaplus(is-1,in,ina)=(ttau-ttau0)*constq* &
@@ -161,6 +165,7 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
                       velocity(im,ibeam)) + etaminus(is-1,in,ina)
         end do
       end do
+!$omp end critical
     end if
 2   continue
     ttau0=ttau
