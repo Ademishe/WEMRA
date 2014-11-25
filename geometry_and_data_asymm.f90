@@ -46,7 +46,7 @@ subroutine parameters1
   ee=(1.0d0,0.0d0)
   pi = 3.14159265359d0
   gam0= w0/3.0d0
-  constq = 2.0d0*beam_curr/(w0**2)*2.0d0*pi/nbeam/mk0  !для уравн.возбуждения
+  constq = 2.0d0*beam_curr/(w0**2)*2.0d0*pi/mk0  !для уравн.возбуждения
   print *, "constq", constq
   const1 = -9.0d0/(511.0d0*1000.0d0*w0) !для уравн. движения
 
