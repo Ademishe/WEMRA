@@ -37,7 +37,6 @@ program nest_multy_mode_nes
     open(35,file='phi.dat')
     open (3,file='multi5.cfg')
     open (4,file='amp.dat')
-    open (5,file='spectrum.dat')
     open (9,file='iter.dat')
     open (7,file='sum.dat')
     open (22,file='eta.dat')
@@ -143,7 +142,6 @@ program nest_multy_mode_nes
 	call freeallmem
 
   close (4)
-  close (5)
   close (9)
   close (7)
   close (22)
@@ -170,7 +168,7 @@ subroutine manager (stepwrite,iw)
 	use field_nes
   implicit none
 
-  integer k,i11,is,in,stepwrite,iw,i,im,istwr
+  integer k, i11, is, in, stepwrite, iw, i, im, istwr, ina
   real*8 tau,rel_coord
   complex fffw(256),fffb(256)
 
@@ -205,9 +203,11 @@ subroutine manager (stepwrite,iw)
 
     i11=1
     if (k.ge.(ktimemax-128)) then
-  		i11=1+k-(ktimemax-128)
-      fffw(i11)=xbplus(sk,1,0)
-      fffb(i11)=xbminus(1,1,0)
+			i11 = 1 + k - (ktimemax - 128)
+			! do ina = 0, nka
+      	fffw(i11) = xbplus(sk,1,0)
+      	fffb(i11) = xbminus(1,1,0)
+			! end do
     end if
 		xnplus(:,:,:) = xbplus(:,:,:)
     xnminus(:,:,:) = xbminus(:,:,:)
@@ -233,77 +233,65 @@ subroutine manager (stepwrite,iw)
     call field_structure(ktimemax,1)
     call field_structure(ktimemax,2)
   end if
-  ! if (ktimemax.ge.128) then
-  !   call spektr(fffw,fffb,w0,wh)
-  ! end if
+  if (ktimemax.ge.128) then
+    call spektr(fffw,fffb,w0,wh)
+  end if
 
 903 format(1x,'k=',i5,2x,'im=',i5,2x,e12.5,2x,e12.5,2x,e12.5,2x,'mkk=',i6,2x,'mk0=',i5)
 
 	return
 end
 
-subroutine spektr(seq1,seq2,w0, w1)
-    use fft_mod
-    integer    n,i11,i
-    parameter (n=128)
+subroutine spektr(seq1, seq2, w0, w1)
+	use fft_mod
+	implicit none
 
-!      integer    i, nout
-    real*8       twopi,w0,w1, fow(128),bcw(128),ww
-    complex    c,cexp, coef(128), seq1(128),seq2(128)
-    intrinsic  cexp
+	integer    n,i11,i
+	parameter   (n=128)
+	real*8        twopi,w0,w1, fow(256),bcw(256),ww
+	complex*8   c,cexp, coef(128), seq1(128),seq2(128)
+	intrinsic   cexp
+	open(unit = 5,file='spectr.dat', access = 'APPEND')
 
-!
-!      c     = (0.,1.)
-!      twopi = 2.0*const('pi')
-!                                  here we compute (2*pi*i/n)*3.
-!      h = (twopi*c/n)*3.
-!                                  this loop fills out the data vector
-!                                  with a pure exponential signal of
-!                                  frequency 3.
+	coef = seq1
+	call fft(coef)
+	!      call fftcf(n, seq1, coef)
+	do 10  i=1, 64
+		fow(i)=abs(coef(i+64))
+		fow(i+64)=abs(coef(i))
+10 	continue
 
-!                                  compute the fourier transform of seq
-!      call fftcf (n, seq1, coef)
-    call fft(coef)
-!                                  get output unit number and print
-!                                  results
-    do 10  i=1, 64
-        fow(i)=abs(coef(i+64))
-        fow(i+64)=abs(coef(i))
-10      continue
-!        call fftcf (n, seq2, coef)
-        call fft(coef)
-        do 11  i=1, 64
-            bcw(i) =abs(coef(i+64))
-            bcw(i+64) =abs(coef(i))
-11          continue
-            call norma1(fow,n)
-            call norma1(bcw,n)
+		coef = seq2
+		call fft(coef)
+		!      call fftcf (n, seq2, coef)
+		do 11  i=1, 64
+			bcw(i) =abs(coef(i+64))
+			bcw(i+64) =abs(coef(i))
+			11 continue
+			call norma1(fow,n)
+			call norma1(bcw,n)
 
-            do 21 i11=1,128
-                ww=real((i11-1)/128.0)+0.5
-                write (5,921) ww,fow(i11),bcw(i11)
-21              continue
-921             format(1x,'w=',f9.4,2x,'fw=',e9.2,2x,'bw',e9.2)
-!      call umach (2, nout)
-!      write (nout,99998)
-!99998 format (9x, 'index', 8x, 'seq', 15x, 'coef')
-!      write (nout,99999) (i, seq(i), coef(i), i=1,n)
-!99999 format (1x, i11, 5x,'(',f5.2,',',f5.2,')',
-!     &                 5x,'(',f5.2,',',f5.2,')')
-    return
+			do 21 i11=1,128
+				ww=real((i11-1)/128.0)+0.5
+				write (5,921) ww,fow(i11),bcw(i11)
+				21 continue
+
+				921 format(1x,'w=',f9.4,2x,'fw=',e9.2,2x,'bw',e9.2)
+	close(5)
+	return
 end
 
 subroutine norma1(a,n)
-    real*8 a(128),aa
-    integer n,i
-    aa=0.0
-    do 1 i=1,n
-        aa=max1(aa,a(i))
-1       continue
-        do 2 i=1,n
-            a(i)=a(i)/aa
-2           continue
-    return
+	real*8 a(256),aa
+	integer n,i
+	aa=0.0
+	do 1 i=1,n
+		aa=max1(aa,a(i))
+1		continue
+		do 2 i=1,n
+			a(i)=a(i)/aa
+2			continue
+	return
 end
 
 subroutine configarr
