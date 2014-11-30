@@ -8,19 +8,19 @@ def runner(q):
             dirName = q.get(block = False)
             os.chdir("./" + dirName)
             print("running ", "./" + dirName)
-            os.system("~/new_execute")
+            os.system(executable)
             os.chdir("../")
         except queue.Empty:
             print("Queue is empty")
             break
 
 
-if len(sys.argv) < 2:
+if len(sys.argv) < 3:
     print("Not enough arguments")
     exit(1)
 
-print(sys.argv[1])
 numThreads = int(sys.argv[1])
+executable = os.path.abspath(sys.argv[2])
 folders = mp.Queue()
 threads = []
 
