@@ -95,6 +95,8 @@ program nest_multy_mode_nes
     read (3,*)    dz31,dz32
     read (3,1000)                             string
     read (3,*)    sdop31,sdop32
+		read (3,1000)                             string
+		read (3,*)    skipE01
 		close(3)
 
     if (ss00.eq.1) then
@@ -442,6 +444,7 @@ subroutine field_structure (k,kluch2)
       radius = rt(sk)/30.0*ir
       do  inr=1,nkr
       	do ina=0,nka
+					if (skipE01.eq.1 .and. inr.eq.1 .and. ina.eq.0) continue
         	is=1
           a3 = (xbplus(is,inr,ina)-xbminus(is,inr,ina) )
           a4 = (xbplus(is,inr,ina)+xbminus(is,inr,ina) )
@@ -500,6 +503,7 @@ subroutine field_structure (k,kluch2)
       koordz=zs(is)+dz(is)/2.0d0
       do  inr=1,nkr
       	do ina=0,nka
+					if (skipE01.eq.1 .and. inr.eq.1 .and. ina.eq.0) continue
         	a3 = ( xbplus(is,inr,ina)-xbminus(is,inr,ina) )
           a4 = ( xbplus(is,inr,ina)+xbminus(is,inr,ina) )
           a1 = sqrt(abs(zn(is,inr,ina))/pi)*((gam(is,inr,ina))/(( abs(gam(is,inr,ina)))*(rt(is)) ) )

@@ -23,7 +23,7 @@ module array_work
 !    rb- радиус потока
 !    gam0 = w0/c
 !    wh0,wh,dw - частоты, используемые при определении спектра
-
+    integer skipE01
     integer sk,ss00,sk1,sk2,sk3,sdop01,sdop02,sdop03, &
             sdop11,sdop12,sdop21,sdop22,sdop31,sdop32,mk0,ns2,ns4, &
             mkns,ktimemax, kluch_beam, kluch_structur(3),nka,nkr, &

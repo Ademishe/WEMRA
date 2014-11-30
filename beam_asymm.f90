@@ -126,6 +126,7 @@ subroutine fct(ttau, ibeam)
       deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
       do in = 1, nkr
         do ina = 0, nka
+          if (skipE01.eq.1 .and. inr.eq.1 .and. ina.eq.0) continue
           dery(2*im-1) = dery(2*im-1) + const1*dreal(eznbm(is-1, in, ina, ibeam) * ((xnplus(is-1,in,ina)+dxnplus(is-1,in,ina)*deltaz)* &
             exp(ce*(ttau-gam(is-1,in,ina)*deltaz))-(xnminus(is-1,in,ina) + dxnminus(is-1,in,ina)*deltaz)*exp(ce*(ttau+gam(is-1,in,ina)*deltaz))))
           dery(2*im) = velocity(im, ibeam)/w0
@@ -153,9 +154,10 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
 4   continue
     if (is.gt.1 .and. is.lt.sk+2) then
       deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
-!$omp critical
+!!$omp critical
       do in = 1, nkr
         do ina = 0, nka
+          if (skipE01.eq.1 .and. inr.eq.1 .and. ina.eq.0) continue
           etaplus(is-1,in,ina)=(ttau-ttau0)*constq* &
                       (dconjg(eznbm(is-1,in,ina,ibeam))*exp(ce*(-ttau+dconjg(gam(is-1,in,ina))*deltaz))* &
                       velocity(im,ibeam)) + etaplus(is-1,in,ina)
@@ -165,7 +167,7 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
                       velocity(im,ibeam)) + etaminus(is-1,in,ina)
         end do
       end do
-!$omp end critical
+!!$omp end critical
     end if
 2   continue
     ttau0=ttau

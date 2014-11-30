@@ -50,7 +50,7 @@ subroutine matrix_construct
 	ab(:,:,:) = (0.0d0, 0.0d0)
 
   do ina = 0, nka
-!$omp parallel default(private) shared(ee, ce, dt, ina, w0, gam0, kluch_shiv, dz, nkr, sk, nka, uste1, uste2, usth1, usth2, rt, gam, d1plus, d1minus, d2plus, d2minus, dd1plus, dd1minus, dd2plus, dd2minus, mu, b1plus, b1minus, b2plus, b2minus, bb1plus, bb1minus, bb2plus, bb2minus, zn, fgammaplus, fgammaminus, db1plus, db1minus, ddb1plus, ddb1minus, ddb2plus, ddb2minus, db2plus, db2minus, ddb1plusinv, ddb1minusinv, ddb2plusinv, ddb2minusinv, dddb1, dddb2, dddb1inv, dddb2inv, alfaplus, alfaminus, betaplus, betaminus)
+!$omp parallel default(private) shared(skipE01, ee, ce, dt, ina, w0, gam0, kluch_shiv, dz, nkr, sk, nka, uste1, uste2, usth1, usth2, rt, gam, d1plus, d1minus, d2plus, d2minus, dd1plus, dd1minus, dd2plus, dd2minus, mu, b1plus, b1minus, b2plus, b2minus, bb1plus, bb1minus, bb2plus, bb2minus, zn, fgammaplus, fgammaminus, db1plus, db1minus, ddb1plus, ddb1minus, ddb2plus, ddb2minus, db2plus, db2minus, ddb1plusinv, ddb1minusinv, ddb2plusinv, ddb2minusinv, dddb1, dddb2, dddb1inv, dddb2inv, alfaplus, alfaminus, betaplus, betaminus)
 !$omp do
     do is = 1, sk
       thread_id = omp_get_thread_num()
@@ -59,6 +59,7 @@ subroutine matrix_construct
       do i = 1, nkr
         do j = 1, nkr
           if(is.gt.1 .and. (rt(is-1)-rt(is)).ge.(0.001d0)) then !уменьшается
+            if ((skipE01.eq.1 .and. ina.eq.0) .and. (i.eq.1 .or. j.eq.1)) continue
             uste1(is,i,j,ina) = (0.0d0,0.0d0)
             uste2(is,i,j,ina) = pfunk(is,i,j,1,0,ina)
             usth1(is,i,j,ina) = conjg(pfunk(is,j,i,1,0,ina))
@@ -444,7 +445,7 @@ double complex function pfunk(is,l,m,Ec,Hc,nk_index)
   temp_int = (0.0d0, 0.0d0)
   n = nk_index
   k = nk_index
-  accuracy = 0.001d0
+  accuracy = 0.0001d0
 
   chi_nm = mu(m, n)/rt(is-Hc)
   chi_kl = mu(m, n)/rt(is-Hc)

@@ -47,7 +47,6 @@ subroutine parameters1
   pi = 3.14159265359d0
   gam0= w0/3.0d0
   constq = 2.0d0*beam_curr/(w0**2)*2.0d0*pi/mk0/nbeam  !для уравн.возбуждения
-  print *, "constq", constq
   const1 = -9.0d0/(511.0d0*1000.0d0*w0) !для уравн. движения
 
   delta_alpha = 2.0d0*pi / nbeam
@@ -90,6 +89,7 @@ subroutine gazel1
   do is=1,sk
     do  inr = 1, nkr
       do ina = 0, nka
+        if (skipE01.eq.1 .and. inr.eq.1 .and. ina.eq.0) continue
         gam(is,inr,ina)=conjg(sqrt((gam0**2-(mu(inr,ina)/rt(is))**2)*ee))
         zn(is,inr,ina)=376.7d0*(gam(is,inr,ina))/gam0
       end do
@@ -102,7 +102,7 @@ end subroutine
 subroutine eid
   integer inr, is, ina, inbm
   integer thread_num, thread_id
-!$omp parallel default(private) shared(eznbm, ernbm, ephinbm, rt, gam, zn, rb, mu, alpha, sk, nbeam, nka, nkr, ce, ee)
+!$omp parallel default(private) shared(skipE01, eznbm, ernbm, ephinbm, rt, gam, zn, rb, mu, alpha, sk, nbeam, nka, nkr, ce, ee)
 !$omp do
   do is = 1, sk
     thread_id = omp_get_thread_num()
@@ -111,6 +111,7 @@ subroutine eid
     do inbm = 1, nbeam
       do ina = 0, nka
         do inr = 1, nkr
+          if (skipE01.eq.1 .and. inr.eq.1 .and. ina.eq.0) continue
           eznbm(is,inr,ina,inbm) = get_eznbm(is, ina, inr, inbm)
           ! ernbm(is,inr,ina,inbm) = -ce * gam(is, inr, ina) / chi * 0.5d0 * (bessel_jn(ina-1, chi*rb(inbm)) - bessel_jn(ina+1, chi*rb(inbm))) * cos(ina*alpha(inbm)) * E
           ! ephinbm(is,inr,ina,inbm) = -ce * gam(is, inr, ina) / chi / chi * ina / rb(inbm) * bessel_jn(ina, chi*rb(inbm)) * sin(ina*alpha(inbm)) * E
@@ -128,7 +129,7 @@ complex*16 function get_eznbm(is, ina, inr, inbm)
   integer is, ina, inr, inbm
   complex*16 integral, temp_int, a, b, E
   real*8 accuracy, chi
-  accuracy = 0.001d0
+  accuracy = 0.0001d0
   temp_int = 0.0d0
   chi = mu(inr, ina)/rt(is)
   if (ina.ne.0) then
@@ -138,7 +139,7 @@ complex*16 function get_eznbm(is, ina, inr, inbm)
   b = integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy)
   integral = a * b + temp_int
   E = sqrt(zn(is, inr, ina) / abs(zn(is, inr, ina)) * chi * chi * conjg(zn(is, inr, ina)) / gam(is, inr, ina) / conjg(gam(is, inr, ina)) / integral)
-  get_eznbm = bessel_jn(ina, chi*rb(inbm)) * cos(ina*alpha(inbm)) * E
+  get_eznbm = ce * bessel_jn(ina, chi*rb(inbm)) * cos(ina*alpha(inbm)) * E
   return
   contains
 
