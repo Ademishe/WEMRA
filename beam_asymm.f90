@@ -153,7 +153,7 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
 4   continue
     if (is.gt.1 .and. is.lt.sk+2) then
       deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
-!$omp critical
+!!$omp critical
       do in = 1, nkr
         do ina = 0, nka
           etaplus(is-1,in,ina)=(ttau-ttau0)*constq* &
@@ -165,7 +165,7 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
                       velocity(im,ibeam)) + etaminus(is-1,in,ina)
         end do
       end do
-!$omp end critical
+!!$omp end critical
     end if
 2   continue
     ttau0=ttau

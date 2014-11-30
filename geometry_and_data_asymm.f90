@@ -47,7 +47,6 @@ subroutine parameters1
   pi = 3.14159265359d0
   gam0= w0/3.0d0
   constq = 2.0d0*beam_curr/(w0**2)*2.0d0*pi/mk0/nbeam  !для уравн.возбуждения
-  print *, "constq", constq
   const1 = -9.0d0/(511.0d0*1000.0d0*w0) !для уравн. движения
 
   delta_alpha = 2.0d0*pi / nbeam
@@ -128,7 +127,7 @@ complex*16 function get_eznbm(is, ina, inr, inbm)
   integer is, ina, inr, inbm
   complex*16 integral, temp_int, a, b, E
   real*8 accuracy, chi
-  accuracy = 0.001d0
+  accuracy = 0.0001d0
   temp_int = 0.0d0
   chi = mu(inr, ina)/rt(is)
   if (ina.ne.0) then
@@ -138,7 +137,7 @@ complex*16 function get_eznbm(is, ina, inr, inbm)
   b = integrate(cossin_mult, 0.0d0, 6.2831853d0, accuracy)
   integral = a * b + temp_int
   E = sqrt(zn(is, inr, ina) / abs(zn(is, inr, ina)) * chi * chi * conjg(zn(is, inr, ina)) / gam(is, inr, ina) / conjg(gam(is, inr, ina)) / integral)
-  get_eznbm = bessel_jn(ina, chi*rb(inbm)) * cos(ina*alpha(inbm)) * E
+  get_eznbm = ce * bessel_jn(ina, chi*rb(inbm)) * cos(ina*alpha(inbm)) * E
   return
   contains
 
