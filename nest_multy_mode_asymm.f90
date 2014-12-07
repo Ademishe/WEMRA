@@ -125,7 +125,7 @@ program nest_multy_mode_nes
   do iomega=1,iw
 		w0=wh0+(iomega-1)*dw
 		print *, iomega, w0
-!			beam_voltage = (1.0d0/sqrt(1-((dz1*sdop1+dz2*sdop2)*w0/betazd/3.0d0)**2)-1.0d0)*511.0d0
+		if (kluch_beam.eq.2) beam_voltage = (1.0d0/sqrt(1-((dz11*sdop11+dz12*sdop12)*w0/betazd/3.0d0)**2)-1.0d0)*511.0d0
 		print *, "indat"
 		call indat            ! проведение вспомогательных расчетов geometry_and_data
 
