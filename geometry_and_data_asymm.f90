@@ -106,7 +106,7 @@ subroutine eid
   do is = 1, sk
     thread_id = omp_get_thread_num()
     thread_num = omp_get_num_threads()
-    print *, "***eid***",  is, sk, thread_id, thread_num
+    ! print *, "***eid***",  is, sk, thread_id, thread_num
     do inbm = 1, nbeam
       do ina = 0, nka
         do inr = 1, nkr
@@ -127,7 +127,7 @@ complex*16 function get_eznbm(is, ina, inr, inbm)
   integer is, ina, inr, inbm
   complex*16 integral, temp_int, a, b, E
   real*8 accuracy, chi
-  accuracy = 0.0001d0
+  accuracy = 0.001d0
   temp_int = 0.0d0
   chi = mu(inr, ina)/rt(is)
   if (ina.ne.0) then

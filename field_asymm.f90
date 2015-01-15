@@ -55,7 +55,7 @@ subroutine matrix_construct
     do is = 1, sk
       thread_id = omp_get_thread_num()
       thread_num = omp_get_num_threads()
-      print *, "***matrix_construct***", is, sk, ina, thread_id, thread_num
+      ! print *, "***matrix_construct***", is, sk, ina, thread_id, thread_num
       do i = 1, nkr
         do j = 1, nkr
           if(is.gt.1 .and. (rt(is-1)-rt(is)).ge.(0.001d0)) then !уменьшается
@@ -444,7 +444,7 @@ double complex function pfunk(is,l,m,Ec,Hc,nk_index)
   temp_int = (0.0d0, 0.0d0)
   n = nk_index
   k = nk_index
-  accuracy = 0.0001d0
+  accuracy = 0.001d0
 
   chi_nm = mu(m, n)/rt(is-Hc)
   chi_kl = mu(m, n)/rt(is-Hc)

@@ -28,7 +28,7 @@ subroutine beam_calc (tau)
 	real*8 tau
 	integer imm, k12, i, mk, mkk1, is, in, ina, ibeam
   double precision sum0,prmt(5)
-!!$omp parallel default(private) public(nbeam, nka, nkr, mkk, mkns, all_yarray, all_dery, tau, dt, step_prmt, prmt_4, mk0, velocity)
+!!$omp parallel default(private) firstprivate(mkk, mkns, mkk1) shared(v0, w0, rel_factor, pi, ampl_mod, ddz, ce, ee, nbeam, nka, nkr, sk, dz, all_yarray, all_dery, tau, dt, step_prmt, prmt_4, mk0, velocity, etaplus, etaminus, gam, constq, zs, xnplus, dxnplus, xnminus, dxnminus, const1, eznbm)
 !!$omp do
   do ibeam = 1, nbeam
     yarray(:) = all_yarray(:, ibeam)
@@ -113,10 +113,11 @@ subroutine fct(ttau, ibeam)
   integer is, im, in, ina, ibeam
 
   do im=1,mkk
-    is=0
-3   is=is+1
-    if((zs(is) - yarray(2*im))) 3,3,4
-4   continue
+    inner2: do is = 1, sk+2
+      if((zs(is) - yarray(2*im)).gt.0.0d0) then
+        exit inner2
+      end if
+    end do inner2
 
     if (is.eq.1 .or. is.eq.sk+2) then
       dery(2*im-1)=0.0d0
@@ -145,12 +146,14 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
     prmt(5)=2.0d0
 	end if
 
-  do 2 im=1,mkk
+  do im = 1, mkk
     velocity(im,ibeam) = yarray(2*im-1)/sqrt((yarray(2*im-1)/3.0d0)**2 + 1.0d0)
-    is = 0
-3   is = is+1
-    if((zs(is)-yarray(2*im))) 3,4,4
-4   continue
+    inner2: do is = 1, sk+2
+      if((zs(is) - yarray(2*im)).ge.0.0d0) then
+        ! print * , zs(is), yarray(2*im)
+        exit inner2
+      end if
+    end do inner2
     if (is.gt.1 .and. is.lt.sk+2) then
       deltaz=yarray(2*im)-zs(is-1)-dz(is-1)/2.0d0
 !!$omp critical
@@ -167,9 +170,9 @@ subroutine outp(ttau,irec,ndim,prmt,ttau0,itemp, ktemp, ibeam)
       end do
 !!$omp end critical
     end if
-2   continue
-    ttau0=ttau
-    itemp=itemp+1
+  end do
+  ttau0=ttau
+  itemp=itemp+1
 10  format(1x,'ktemp',i5,2x,'itemp',i4,2x,'ttau=  ',f17.14,2x,'irec=',i5)
-    return
+  return
 end subroutine

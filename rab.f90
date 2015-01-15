@@ -2,6 +2,43 @@ module com_prog
 use array_work
 contains
 
+
+subroutine rk4 ( t0, u0, dt, f, u )
+  implicit none
+
+  real ( kind = 8 ) dt
+  external f
+  real ( kind = 8 ) f0
+  real ( kind = 8 ) f1
+  real ( kind = 8 ) f2
+  real ( kind = 8 ) f3
+  real ( kind = 8 ) t0
+  real ( kind = 8 ) t1
+  real ( kind = 8 ) t2
+  real ( kind = 8 ) t3
+  real ( kind = 8 ) u
+  real ( kind = 8 ) u0
+  real ( kind = 8 ) u1
+  real ( kind = 8 ) u2
+  real ( kind = 8 ) u3
+  call f ( t0, u0, f0 )
+
+  t1 = t0 + dt / 2.0D+00
+  u1 = u0 + dt * f0 / 2.0D+00
+  call f ( t1, u1, f1 )
+
+  t2 = t0 + dt / 2.0D+00
+  u2 = u0 + dt * f1 / 2.0D+00
+  call f ( t2, u2, f2 )
+
+  t3 = t0 + dt
+  u3 = u0 + dt * f2
+  call f ( t3, u3, f3 )
+
+  u = u0 + dt * ( f0 + 2.0D+00 * f1 + 2.0D+00 * f2 + f3 ) / 6.0D+00
+  return
+end
+
 subroutine drkgs(prmt, ndim, ihlf, ibeam)
   implicit none
   dimension a(4),b(4),c(4),prmt(5)
